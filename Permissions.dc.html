@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>권한</title>
+<script src="dc-runtime.js"></script>
+<script src="role.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@font-face{font-family:Pretendard;font-weight:400;font-display:swap;src:url(font.woff2) format('woff2')}
+@font-face{font-family:Pretendard;font-weight:500;font-display:swap;src:url(font.woff2) format('woff2')}
+@font-face{font-family:Pretendard;font-weight:600;font-display:swap;src:url(font.woff2) format('woff2')}
+@font-face{font-family:Pretendard;font-weight:700;font-display:swap;src:url(font.woff2) format('woff2')}
+body{margin:0;background:#f4f5f7}
+a{color:#191f28}a:hover{color:#191f28}
+button,input,select{font-family:inherit}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #191f28;outline-offset:2px}
+</style>
+</helmet>
+<div style="display: flex; flex-wrap: wrap; align-items: stretch; min-height: 1320px; background: #f4f5f7; color: #191f28; font-family: Pretendard, 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, sans-serif; letter-spacing: -0.005em; font-size: 15px; line-height: 24px">
+  <aside aria-label="주 메뉴" style="{{side.aside}}">
+    <div style="{{side.head}}">
+      <sc-if value="{{side.open}}" hint-placeholder-val="{{true}}"><img src="logo.png" alt="더 위너스학원" style="height: 28px; width: auto"></sc-if>
+      <sc-if value="{{side.closed}}" hint-placeholder-val="{{false}}"><img src="logo.png" alt="더 위너스학원" style="width: 26px; height: 26px"></sc-if>
+    </div>
+    <nav style="display: flex; flex-direction: column; gap: 20px">
+      <sc-for list="{{side.groups}}" as="g" hint-placeholder-count="3">
+        <div style="display: flex; flex-direction: column; gap: 2px">
+          <sc-if value="{{g.showTitle}}" hint-placeholder-val="{{true}}">
+            <span style="display: flex; align-items: center; gap: 6px; padding: 0 12px 6px; font-size: 12px; line-height: 16px; font-weight: 600; color: #8b95a1">
+              <sc-if value="{{g.lock}}" hint-placeholder-val="{{false}}"><svg aria-hidden="true" width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="#8b95a1" stroke-width="1.5"><rect x="2.5" y="6" width="9" height="6" rx="1.5"></rect><path d="M4.5 6V4.5a2.5 2.5 0 0 1 5 0V6"></path></svg></sc-if>{{g.title}}</span>
+          </sc-if>
+          <sc-if value="{{g.divider}}" hint-placeholder-val="{{false}}"><span aria-hidden="true" style="display: block; height: 1px; margin: 4px 14px 8px; background: #e5e8eb"></span></sc-if>
+          <sc-for list="{{g.items}}" as="it" hint-placeholder-count="3">
+            <a href="{{it.href}}" title="{{it.name}}" aria-label="{{it.name}}" aria-current="{{it.current}}" style="{{it.style}}">
+              <svg aria-hidden="true" width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="{{it.d}}"></path></svg>
+              <sc-if value="{{side.open}}" hint-placeholder-val="{{true}}"><span style="flex: 1; min-width: 0; white-space: nowrap">{{it.name}}</span></sc-if>
+              <sc-if value="{{it.badge}}" hint-placeholder-val="{{false}}"><span style="{{it.badgeStyle}}">{{it.badge}}</span></sc-if>
+            </a>
+          </sc-for>
+        </div>
+      </sc-for>
+    </nav>
+    <div style="margin-top: auto; display: flex; flex-direction: column; gap: 8px">
+      <div style="{{side.userRow}}">
+        <span style="flex: none; width: 34px; height: 34px; border-radius: 17px; display: inline-flex; align-items: center; justify-content: center; background: #f2f4f6; color: #191f28; font-size: 14px; font-weight: 700">{{side.initial}}</span>
+        <sc-if value="{{side.open}}" hint-placeholder-val="{{true}}"><span style="display: flex; flex-direction: column; min-width: 0"><span style="font-size: 14px; line-height: 20px; font-weight: 600; white-space: nowrap">{{side.user}}</span><span style="font-size: 12px; line-height: 16px; color: #6b7684; white-space: nowrap">{{side.role}}</span></span></sc-if>
+      </div>
+      <button type="button" onClick="{{side.toggle}}" aria-expanded="{{side.expanded}}" aria-label="{{side.toggleLabel}}" title="{{side.toggleLabel}}" style="{{side.toggleStyle}}">
+        <svg aria-hidden="true" width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="{{side.chev}}"></path></svg>
+        <sc-if value="{{side.open}}" hint-placeholder-val="{{true}}"><span>메뉴 접기</span></sc-if>
+      </button>
+    </div>
+  </aside>
+
+  <div style="flex: 999 1 640px; min-width: 0; display: flex; flex-direction: column">
+
+
+    <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; width: 100%; max-width: 1440px; margin: 0 auto; box-sizing: border-box; padding: 22px 40px 0">
+      <label for="gq" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">학생, 수업, 학부모 검색</label>
+      <input id="gq" type="search" placeholder="학생 · 수업 · 학부모 번호 뒷자리" style="flex: 0 1 380px; min-width: 0; height: 44px; box-sizing: border-box; padding: 0 16px; border: 1px solid #e5e8eb; border-radius: 12px; background: #ffffff; font-size: 14px; color: #191f28">
+      <div style="flex: 1 1 0"></div>
+      <div role="group" aria-label="보기 권한" style="display: flex; padding: 4px; border-radius: 12px; background: #e9ecf0">
+        <sc-for list="{{roles}}" as="r" hint-placeholder-count="2">
+          <button type="button" onClick="{{r.pick}}" aria-pressed="{{r.pressed}}" style="{{r.style}}">{{r.label}}</button>
+        </sc-for>
+      </div>
+    </div>
+
+  <main style="max-width: 1440px; margin: 0 auto; box-sizing: border-box; padding: 24px 40px 56px; width: 100%; display: flex; flex-direction: column; gap: 22px">
+    <sc-if value="{{isTeacher}}" hint-placeholder-val="{{false}}">
+      <section aria-label="권한 안내" style="background: #ffffff; border-radius: 20px; padding: 48px 32px; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center">
+        <h1 style="margin: 0; font-size: 22px; line-height: 30px; font-weight: 700">원장만 볼 수 있는 화면입니다</h1>
+        <p style="margin: 0; font-size: 15px; line-height: 22px; color: #4e5968">권한은 원장 그룹만 정할 수 있습니다. 내가 가진 권한은 설정의 내 계정에서 볼 수 있습니다.</p>
+      </section>
+    </sc-if>
+    <sc-if value="{{owner}}" hint-placeholder-val="{{true}}">
+    <div style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 24px">
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px"><h1 style="margin: 0; font-size: 32px; line-height: 40px; font-weight: 700; letter-spacing: -0.02em">권한</h1><span style="align-self: center; font-size: 12px; line-height: 16px; font-weight: 600; padding: 3px 8px; border-radius: 6px; background: #e9ecf0; color: #4e5968">예시 데이터</span></div>
+        <p style="margin: 0; font-size: 14px; line-height: 20px; color: #4e5968">그룹마다 권한을 정하고, 필요한 사람에게만 따로 더하거나 뺍니다. 리포트 발송, 수납, 강사와 권한 관리는 원장 그룹만 가집니다.</p>
+      </div>
+      <div role="group" aria-label="보기" style="display: flex; padding: 4px; border-radius: 12px; background: #e9ecf0">
+        <sc-for list="{{views}}" as="v" hint-placeholder-count="2"><button type="button" aria-pressed="{{v.sel}}" onClick="{{v.pick}}" style="{{v.style}}">{{v.label}}</button></sc-for>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 22px; align-items: flex-start">
+      <section aria-labelledby="who" style="flex: 0 1 300px; min-width: 260px; background: #ffffff; border-radius: 20px; padding: 18px 14px 14px; display: flex; flex-direction: column; gap: 10px">
+        <h2 id="who" style="margin: 0; padding: 0 6px; font-size: 19px; line-height: 26px; font-weight: 700">{{listTitle}}</h2>
+        <div style="display: flex; flex-direction: column; gap: 2px">
+          <sc-for list="{{items}}" as="it" hint-placeholder-count="5">
+            <button type="button" onClick="{{it.pick}}" aria-pressed="{{it.on}}" style="{{it.style}}">
+              <span style="display: flex; flex-direction: column; min-width: 0; text-align: left"><span style="font-size: 15px; line-height: 22px; font-weight: 600">{{it.name}}</span><span style="font-size: 12px; line-height: 16px; color: #6b7684">{{it.sub}}</span></span>
+              <sc-if value="{{it.badge}}" hint-placeholder-val="{{false}}"><span style="flex: none; font-size: 12px; line-height: 16px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: #eef2f9; color: #2c4682">{{it.badge}}</span></sc-if>
+            </button>
+          </sc-for>
+        </div>
+        <sc-if value="{{isGroups}}" hint-placeholder-val="{{true}}">
+          <button type="button" style="display: flex; align-items: center; gap: 8px; min-height: 52px; padding: 0 12px; border: 1px dashed #d1d6db; border-radius: 12px; background: transparent; color: #4e5968; font-size: 14px; font-weight: 600; cursor: pointer; text-align: left"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 2v10M2 7h10"></path></svg>그룹 만들기 <span style="font-weight: 400; color: #6b7684">예: 행정, 홍보</span></button>
+        </sc-if>
+      </section>
+
+      <section aria-labelledby="pt" style="flex: 1 1 640px; min-width: 0; background: #ffffff; border-radius: 20px; padding: 22px 24px; display: flex; flex-direction: column; gap: 16px">
+        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 10px 20px">
+          <div style="display: flex; flex-direction: column; gap: 2px">
+            <h2 id="pt" style="margin: 0; font-size: 22px; line-height: 30px; font-weight: 700">{{cur.title}}</h2>
+            <span style="font-size: 13px; line-height: 18px; color: #4e5968">{{cur.sub}}</span>
+          </div>
+          <sc-if value="{{isPeople}}" hint-placeholder-val="{{false}}">
+            <div style="display: flex; flex-direction: column; gap: 4px">
+              <label for="pg" style="font-size: 12px; line-height: 16px; font-weight: 600; color: #6b7684">속한 그룹</label>
+              <select id="pg" style="height: 40px; padding: 0 12px; border: 1px solid #e5e8eb; border-radius: 10px; background: #ffffff; font-size: 14px; color: #191f28"><option>{{cur.group}}</option><option>{{cur.otherGroup}}</option></select>
+            </div>
+          </sc-if>
+        </div>
+        <sc-if value="{{cur.lockedAll}}" hint-placeholder-val="{{false}}">
+          <p style="margin: 0; padding: 12px 14px; border-radius: 12px; background: #eef2f9; font-size: 13px; line-height: 20px; color: #2c4682">원장 그룹은 모든 권한을 가지며 바꿀 수 없습니다. 원장 그룹에는 최소 한 명이 있어야 합니다.</p>
+        </sc-if>
+        <div style="display: flex; flex-direction: column; gap: 14px">
+          <sc-for list="{{areas}}" as="a" hint-placeholder-count="7">
+            <div style="display: flex; flex-direction: column; gap: 8px">
+              <h3 style="margin: 0; padding: 0 4px; font-size: 13px; line-height: 18px; font-weight: 700; color: #6b7684">{{a.name}}</h3>
+              <div style="border: 1px solid #e5e8eb; border-radius: 14px; overflow: hidden; background: #ffffff">
+              <sc-for list="{{a.perms}}" as="p" hint-placeholder-count="2">
+                <div style="padding-left: 16px; background: {{p.bg}}">
+                <div style="display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 16px; align-items: center; padding: 12px 16px 12px 0; border-top: {{p.line}}">
+                  <span style="display: flex; flex-direction: column; min-width: 0">
+                    <span style="display: inline-flex; align-items: center; gap: 8px; font-size: 14px; line-height: 20px; font-weight: 600">{{p.name}}<sc-if value="{{p.tag}}" hint-placeholder-val="{{false}}"><span style="{{p.tagStyle}}">{{p.tag}}</span></sc-if></span>
+                    <span style="font-size: 12px; line-height: 16px; color: #6b7684">{{p.desc}}</span>
+                  </span>
+                  <sc-if value="{{p.locked}}" hint-placeholder-val="{{false}}">
+                    <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px; line-height: 18px; font-weight: 600; color: #6b7684"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2.5" y="6" width="9" height="6" rx="1.5"></rect><path d="M4.5 6V4.5a2.5 2.5 0 0 1 5 0V6"></path></svg>{{p.lockText}}</span>
+                  </sc-if>
+                  <sc-if value="{{p.open}}" hint-placeholder-val="{{true}}">
+                    <div role="group" aria-label="{{p.name}}" style="display: flex; padding: 3px; border-radius: 10px; background: #e9ecf0">
+                      <sc-for list="{{p.opts}}" as="o" hint-placeholder-count="3"><button type="button" aria-pressed="{{o.sel}}" onClick="{{o.pick}}" style="{{o.style}}">{{o.label}}</button></sc-for>
+                    </div>
+                  </sc-if>
+                </div>
+                </div>
+              </sc-for>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 10px; padding-top: 4px">
+          <span style="margin-right: auto; font-size: 13px; line-height: 18px; color: #6b7684">{{saveNote}}</span>
+          <button type="button" style="height: 44px; padding: 0 16px; border: 0; border-radius: 10px; background: #f2f4f6; color: #191f28; font-size: 14px; font-weight: 600; cursor: pointer">되돌리기</button>
+          <button type="button" style="height: 44px; padding: 0 18px; border: 0; border-radius: 10px; background: #191f28; color: #ffffff; font-size: 14px; font-weight: 600; cursor: pointer">변경 저장</button>
+        </div>
+      </section>
+    </div>
+
+    <section aria-labelledby="log" style="background: #ffffff; border-radius: 20px; padding: 22px 24px; display: flex; flex-direction: column; gap: 8px">
+      <h2 id="log" style="margin: 0 0 4px; font-size: 19px; line-height: 26px; font-weight: 700">변경 기록</h2>
+      <sc-for list="{{log}}" as="l" hint-placeholder-count="4">
+        <div style="display: grid; grid-template-columns: 110px minmax(0, 1fr) auto; gap: 16px; align-items: center; padding: 10px 0; border-top: {{l.bg}}; font-size: 14px; line-height: 20px">
+          <span style="color: #6b7684; font-variant-numeric: tabular-nums">{{l.when}}</span><span>{{l.text}}</span><span style="font-size: 13px; color: #6b7684">{{l.by}}</span>
+        </div>
+      </sc-for>
+      <span style="padding: 4px 12px 0; font-size: 12px; line-height: 16px; color: #6b7684">권한 변경 기록은 3년 동안 보관합니다.</span>
+    </section>
+    </sc-if>
+  </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1900}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { view: 'groups', grp: 'teacher', person: 'pje', g: {}, o: {} }; }
+  renderVals() {
+    const side = (() => {
+      const collapsed = !!(this.state && this.state.side);
+      const own = !(this.state && this.state.role === 'teacher');
+      const D = {
+        home: 'M3.5 9.2 10 4l6.5 5.2V16a1 1 0 0 1-1 1H12v-4.5H8V17H4.5a1 1 0 0 1-1-1z',
+        cal: 'M5 4.5h10a2 2 0 0 1 2 2V15a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6.5a2 2 0 0 1 2-2zM3 8.5h14M7 3v3M13 3v3',
+        att: 'M3 10a7 7 0 1 0 14 0a7 7 0 1 0-14 0M7 10.2l2 2 4-4.4',
+        stu: 'M5 7a3 3 0 1 0 6 0a3 3 0 1 0-6 0M2.5 16.5c.7-2.6 2.8-4 5.5-4s4.8 1.4 5.5 4M13.5 4.6a2.6 2.6 0 0 1 0 5M15 12.8c1.3.6 2.1 1.9 2.5 3.7',
+        cls: 'M4 4.5A1.5 1.5 0 0 1 5.5 3H16v12H5.5A1.5 1.5 0 0 0 4 16.5zM4 16.5A1.5 1.5 0 0 0 5.5 18H16v-3M7.5 7h5',
+        grd: 'M4 16.5V10M10 16.5V4.5M16 16.5V8M2.5 16.5h15',
+        talk: 'M4 4.5h12a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H9l-4 3v-3H4a1 1 0 0 1-1-1v-8a1 1 0 0 1 1-1zM7 9h6',
+        bill: 'M4 5h12a1.5 1.5 0 0 1 1.5 1.5v7A1.5 1.5 0 0 1 16 15H4a1.5 1.5 0 0 1-1.5-1.5v-7A1.5 1.5 0 0 1 4 5zM2.5 8.5h15M6 12h3',
+        staff: 'M6 3h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zM8 8a2 2 0 1 0 4 0a2 2 0 1 0-4 0M7 14c.6-1.4 1.7-2 3-2s2.4.6 3 2',
+        set: 'M3.5 6h13M3.5 14h13M6 6a1.8 1.8 0 1 0 3.6 0a1.8 1.8 0 1 0-3.6 0M10.4 14a1.8 1.8 0 1 0 3.6 0a1.8 1.8 0 1 0-3.6 0',
+        pen: 'M4 16l1-3.5L13.5 4a1.4 1.4 0 0 1 2 0l.5.5a1.4 1.4 0 0 1 0 2L7.5 15zM11.5 6l2.5 2.5',
+        lock: 'M5.5 9h9a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-9a1 1 0 0 1-1-1v-6a1 1 0 0 1 1-1zM7 9V6.5a3 3 0 0 1 6 0V9'
+      };
+      const it = (key, name, icon, href, badge, warn) => {
+        const on = key === 'perm';
+        return { name, d: D[icon], href, current: on ? 'page' : 'false', badge: (!collapsed && badge) ? badge : '',
+          badgeStyle: 'flex: none; font-size: 12px; line-height: 16px; font-weight: 600; padding: 1px 8px; border-radius: 999px; font-variant-numeric: tabular-nums; ' + (warn ? 'background: #fbf3e2; color: #8a5a00;' : 'background: #f2f4f6; color: #4e5968;'),
+          style: 'display: flex; align-items: center; gap: 12px; min-height: 42px; border-radius: 10px; text-decoration: none; font-size: 15px; line-height: 20px; ' + (collapsed ? 'justify-content: center; padding: 0;' : 'padding: 0 12px;') + (on ? ' background: #eef2f9; color: #2c4682; font-weight: 600;' : ' color: #4e5968;') };
+      };
+      const G = (title, items, lock) => ({ title, items, lock: !!lock, showTitle: !collapsed, divider: collapsed && title !== '오늘' });
+      const groups = own ? [
+        G('오늘', [it('home', '홈', 'home', 'Light.dc.html'), it('cal', '일정', 'cal', 'Schedule.dc.html'), it('att', '출결·보강', 'att', 'Attendance.dc.html', '2', true)]),
+        G('학생·수업', [it('students', '학생', 'stu', 'Students.dc.html', '128'), it('cls', '수업', 'cls', 'Classes.dc.html', '18'), it('grd', '성적 입력', 'grd', 'Grades.dc.html'), it('talk', '상담', 'talk', 'Counsel.dc.html', '2', true)]),
+        G('원장 전용', [it('billing', '수납', 'bill', 'Billing.dc.html', '3', true), it('staff', '강사', 'staff', 'Staff.dc.html'), it('perm', '권한', 'lock', 'Permissions.dc.html'), it('set', '설정', 'set', '#')], true)
+      ] : [
+        G('오늘', [it('home', '홈', 'home', 'Light.dc.html'), it('cal', '내 시간표', 'cal', 'Schedule.dc.html'), it('att', '출석부', 'att', 'Attendance.dc.html', '2', true)]),
+        G('내 반', [it('students', '내 반 학생', 'stu', 'Students.dc.html', '38'), it('cls', '내 수업', 'cls', 'Classes.dc.html', '4'), it('grd', '성적 입력', 'pen', 'Grades.dc.html', '11', true), it('talk', '상담 요청', 'talk', 'Counsel.dc.html')])
+      ];
+      return { groups, open: !collapsed, closed: collapsed, expanded: String(!collapsed),
+        user: own ? '[원장 이름]' : '박지은', role: own ? '원장 · 일산 본원' : '영어 강사 · 4개 반', initial: own ? '원' : '박',
+        toggle: () => this.setState({ side: !collapsed }),
+        toggleLabel: collapsed ? '메뉴 펼치기' : '메뉴 접기',
+        chev: collapsed ? 'M8 5l5 5-5 5' : 'M12 5l-5 5 5 5',
+        aside: 'flex: 1 1 ' + (collapsed ? '76px' : '244px') + '; max-width: ' + (collapsed ? '76px' : '244px') + '; box-sizing: border-box; padding: 22px ' + (collapsed ? '12px' : '14px') + ' 18px; background: #ffffff; display: flex; flex-direction: column; gap: 26px; box-shadow: 1px 0 0 #eceff2;',
+        head: 'display: flex; align-items: center; min-height: 44px; ' + (collapsed ? 'justify-content: center;' : 'padding: 0 10px;'),
+        userRow: 'display: flex; align-items: center; gap: 10px; padding: 10px ' + (collapsed ? '0; justify-content: center;' : '8px;') + ' border-radius: 12px; background: #f7f8fa;',
+        toggleStyle: 'display: flex; align-items: center; gap: 8px; min-height: 40px; border: 0; border-radius: 10px; background: transparent; color: #6b7684; font-size: 13px; font-weight: 600; cursor: pointer; ' + (collapsed ? 'justify-content: center; padding: 0;' : 'padding: 0 12px;') };
+    })();
+    const owner = !(this.state && this.state.role === 'teacher');
+    const rseg = (on) => 'min-height: 36px; padding: 0 14px; border: 0; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; ' + (on ? 'background: #ffffff; color: #191f28; box-shadow: 0 1px 2px rgba(27,29,30,0.12);' : 'background: transparent; color: #6b7684;');
+    /* prototype only: the role switch; the real app picks the view from the signed-in account */
+    const roles = [['owner', '원장으로 보기'], ['teacher', '강사로 보기']].map(([id, label]) => ({ label, pressed: String(id === 'owner' ? owner : !owner), style: rseg(id === 'owner' ? owner : !owner), pick: () => this.setState({ role: id }) }));
+
+    /* permission catalogue: scoped permissions take none/own/all, switches take none/all; 'owner' ones stay with the director group */
+    const SC = [['none', '없음'], ['own', '담당 반만'], ['all', '전체']], SW = [['none', '없음'], ['all', '허용']];
+    const AREAS = [
+      ['학생', [['stu.view', '학생 보기', '이름, 학교, 수강 반, 점수', SC], ['stu.edit', '학생 정보 수정', '연락처와 메모 고치기', SC], ['stu.enrol', '학생 등록과 퇴원', '새 학생 등록, 휴원, 퇴원 처리', SW]]],
+      ['출결', [['att.take', '출석 체크', '출석부 입력과 지각, 결석 처리', SC], ['att.makeup', '보강 확정', '보강 요청을 승인하고 일정 확정', SW]]],
+      ['수업', [['cls.note', '수업 노트 쓰기', '진도, 과제, 수업 메모', SC], ['cls.manage', '반 만들기와 편성', '반 개설, 강사 배정, 수강생 배정', SW]]],
+      ['성적', [['grd.enter', '점수 입력', '시험 점수 넣고 고치기', SC], ['grd.exam', '시험 만들기', '시험과 점수 항목 정하기', SW]]],
+      ['리포트', [['rep.note', '선생님 한마디 쓰기', '학생 리포트에 과목 한마디', SC], ['rep.send', '리포트 발송', '학부모에게 보내기', null]]],
+      ['상담', [['cns.view', '상담 기록 보기', '재원생 상담 기록', SC], ['cns.manage', '신규 상담 관리', '문의, 상담 예약, 등록 처리', SW]]],
+      ['일정', [['cal.edit', '학원 일정 등록', '행사, 휴원, 시험 일정', SW]]],
+      ['원장 전용', [['bill', '수납', '청구, 수납, 환불', null], ['staff', '강사 관리', '강사 등록과 담당 반', null], ['perm', '권한 관리', '그룹과 개인 권한', null]]]
+    ];
+    const ALLP = []; AREAS.forEach(([, ps]) => ps.forEach((p) => ALLP.push(p)));
+    const BASE = { owner: {}, teacher: { 'stu.view': 'own', 'stu.edit': 'own', 'stu.enrol': 'none', 'att.take': 'own', 'att.makeup': 'none', 'cls.note': 'own', 'cls.manage': 'none', 'grd.enter': 'own', 'grd.exam': 'none', 'rep.note': 'own', 'cns.view': 'own', 'cns.manage': 'none', 'cal.edit': 'none' } };
+    ALLP.forEach((p) => { BASE.owner[p[0]] = 'all'; });
+    const GROUPS = [{ id: 'owner', name: '원장', members: ['[원장 이름]'] }, { id: 'teacher', name: '강사', members: ['박지은', '이도현', '최윤서', '김나래'] }];
+    const PEOPLE = [
+      { id: 'own1', name: '[원장 이름]', group: 'owner', note: '원장' },
+      { id: 'pje', name: '박지은', group: 'teacher', note: '영어', o: { 'cns.manage': 'all', 'cns.view': 'all' } },
+      { id: 'ldh', name: '이도현', group: 'teacher', note: '수학' },
+      { id: 'cys', name: '최윤서', group: 'teacher', note: '수학', o: { 'grd.exam': 'all' } },
+      { id: 'knr', name: '김나래', group: 'teacher', note: '영어' }
+    ];
+    const gval = (gid, k) => (this.state.g[gid] && this.state.g[gid][k]) || BASE[gid][k] || 'none';
+    const oval = (p, k) => { const s = this.state.o[p.id]; if (s && s[k] !== undefined) return s[k]; return (p.o || {})[k] || 'inherit'; };
+    const LBL = { none: '없음', own: '담당 반만', all: '전체' };
+    const segBtn = (on) => 'min-height: 32px; padding: 0 12px; border: 0; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; ' + (on ? 'background: #ffffff; color: #191f28; box-shadow: 0 1px 2px rgba(25,31,40,0.12);' : 'background: transparent; color: #6b7684;');
+    const isGroups = this.state.view !== 'people';
+    const views = [['groups', '그룹별 권한'], ['people', '사람별 권한']].map(([id, label]) => ({ label, sel: String((id === 'groups') === isGroups), style: segBtn((id === 'groups') === isGroups), pick: () => this.setState({ view: id }) }));
+    const curG = GROUPS.find((g) => g.id === this.state.grp) || GROUPS[1];
+    const curP = PEOPLE.find((p) => p.id === this.state.person) || PEOPLE[1];
+    const countO = (p) => ALLP.filter((x) => x[3] && oval(p, x[0]) !== 'inherit').length;
+    const itemStyle = (on) => 'display: flex; justify-content: space-between; align-items: center; gap: 10px; width: 100%; min-height: 56px; padding: 8px 12px; border: 0; border-radius: 12px; cursor: pointer; font-family: inherit; color: #191f28; ' + (on ? 'background: #eef2f9; box-shadow: inset 0 0 0 2px #3a5ba0;' : 'background: transparent;');
+    const items = isGroups
+      ? GROUPS.map((g) => ({ name: g.name, sub: g.members.length + '명' + (g.id === 'owner' ? ', 모든 권한' : ''), badge: '', on: String(g.id === curG.id), style: itemStyle(g.id === curG.id), pick: () => this.setState({ grp: g.id }) }))
+      : PEOPLE.map((p) => { const n = countO(p); return { name: p.name, sub: (p.group === 'owner' ? '원장 그룹' : '강사 그룹') + ', ' + p.note, badge: n ? '개별 ' + n : '', on: String(p.id === curP.id), style: itemStyle(p.id === curP.id), pick: () => this.setState({ person: p.id }) }; });
+    const setG = (gid, k, v) => { const g = Object.assign({}, this.state.g); g[gid] = Object.assign({}, g[gid] || {}, { [k]: v }); this.setState({ g }); };
+    const setO = (pid, k, v) => { const o = Object.assign({}, this.state.o); o[pid] = Object.assign({}, o[pid] || {}, { [k]: v }); this.setState({ o }); };
+    const lockedAll = isGroups ? curG.id === 'owner' : curP.group === 'owner';
+    const areas = AREAS.map(([name, ps]) => ({ name, perms: ps.map(([k, pname, desc, opts], i) => {
+      const ownerOnly = !opts;
+      const last = ps.length - 1;
+      /* one white card per area; rows split by a hairline that starts at the text (inset), not at the card edge */
+      const line = i === 0 ? '0' : '1px solid #eceef1';
+      const base = { name: pname, desc, tag: '', tagStyle: '', locked: false, open: false, lockText: '', opts: [], bg: 'transparent', line };
+      if (lockedAll) return Object.assign(base, { locked: true, lockText: '전체' });
+      if (ownerOnly) return Object.assign(base, { locked: true, lockText: '원장 그룹만' });
+      if (isGroups) {
+        const v = gval(curG.id, k);
+        return Object.assign(base, { open: true, opts: opts.map(([id, l]) => ({ label: l, sel: String(v === id), style: segBtn(v === id), pick: () => setG(curG.id, k, id) })) });
+      }
+      const gv = gval(curP.group, k), ov = oval(curP, k);
+      const choices = [['inherit', '그룹 따름 (' + LBL[gv] + ')']].concat(opts.filter(([id]) => id !== gv));
+      const diff = ov !== 'inherit';
+      return Object.assign(base, { open: true, bg: diff ? '#fffaf0' : base.bg,
+        tag: diff ? (({ none: 0, own: 1, all: 2 })[ov] > ({ none: 0, own: 1, all: 2 })[gv] ? '더함' : '뺌') : '',
+        tagStyle: 'font-size: 11px; line-height: 14px; font-weight: 700; padding: 2px 7px; border-radius: 999px; background: #fbf3e2; color: #8a5a00',
+        opts: choices.map(([id, l]) => ({ label: l, sel: String(ov === id), style: segBtn(ov === id), pick: () => setO(curP.id, k, id) })) });
+    }) }));
+    const cur = isGroups
+      ? { title: curG.name + ' 그룹', sub: curG.id === 'owner' ? '학원 운영 전체를 맡는 그룹입니다.' : '이 그룹에 속한 ' + curG.members.length + '명(' + curG.members.join(', ') + ')에게 같이 적용됩니다. 담당 반만은 그 강사가 맡은 반의 학생과 수업입니다.' }
+      : { title: curP.name, sub: curP.group === 'owner' ? '원장 그룹이라 모든 권한을 가집니다.' : '그룹 권한을 따르고, 다른 칸만 이 사람에게 따로 적용됩니다. 개별 권한 ' + countO(curP) + '개.', group: curP.group === 'owner' ? '원장' : '강사', otherGroup: curP.group === 'owner' ? '강사' : '원장' };
+    cur.lockedAll = lockedAll;
+    const log = [
+      ['10.28 21:30', '박지은: 신규 상담 관리 허용, 상담 기록 보기 전체로 더함', '원장'],
+      ['10.20 18:05', '최윤서: 시험 만들기 허용', '원장'],
+      ['10.01 10:12', '강사 그룹: 학생 정보 수정을 담당 반만으로 바꿈', '원장'],
+      ['09.15 09:40', '김나래를 강사 그룹에 추가', '원장']
+    ].map(([when, text, by], i) => ({ when, text, by, bg: (i === 0 ? '0' : '1px solid #eceef1') }));
+    return { roles, owner, isTeacher: !owner, side, views, isGroups, isPeople: !isGroups, listTitle: isGroups ? '그룹' : '사람', items, areas, cur, log,
+      saveNote: isGroups ? '저장하면 이 그룹의 모든 사람에게 다음 화면부터 적용됩니다.' : '저장하면 ' + curP.name + '님에게 다음 화면부터 적용됩니다.' };
+  }
+}
+</script>
+</body>
+</html>

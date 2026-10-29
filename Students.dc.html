@@ -1,0 +1,468 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>학생 관리</title>
+<script src="dc-runtime.js"></script>
+<script src="role.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@font-face{font-family:Pretendard;font-weight:400;font-display:swap;src:url(font.woff2) format('woff2')}
+@font-face{font-family:Pretendard;font-weight:500;font-display:swap;src:url(font.woff2) format('woff2')}
+@font-face{font-family:Pretendard;font-weight:600;font-display:swap;src:url(font.woff2) format('woff2')}
+@font-face{font-family:Pretendard;font-weight:700;font-display:swap;src:url(font.woff2) format('woff2')}
+body{margin:0;background:#f4f5f7}
+a{color:#191f28}a:hover{color:#191f28}
+button,input,select{font-family:inherit}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #191f28;outline-offset:2px}
+</style>
+</helmet>
+<div style="display: flex; flex-wrap: wrap; align-items: stretch; min-height: 1480px; background: #f4f5f7; color: #191f28; font-family: Pretendard, 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, sans-serif; letter-spacing: -0.005em; font-size: 15px; line-height: 24px">
+  <aside aria-label="주 메뉴" style="{{side.aside}}">
+    <div style="{{side.head}}">
+      <sc-if value="{{side.open}}" hint-placeholder-val="{{true}}"><img src="logo.png" alt="더 위너스학원" style="height: 28px; width: auto"></sc-if>
+      <sc-if value="{{side.closed}}" hint-placeholder-val="{{false}}"><img src="logo.png" alt="더 위너스학원" style="width: 26px; height: 26px"></sc-if>
+    </div>
+    <nav style="display: flex; flex-direction: column; gap: 20px">
+      <sc-for list="{{side.groups}}" as="g" hint-placeholder-count="3">
+        <div style="display: flex; flex-direction: column; gap: 2px">
+          <sc-if value="{{g.showTitle}}" hint-placeholder-val="{{true}}">
+            <span style="display: flex; align-items: center; gap: 6px; padding: 0 12px 6px; font-size: 12px; line-height: 16px; font-weight: 600; color: #8b95a1">
+              <sc-if value="{{g.lock}}" hint-placeholder-val="{{false}}"><svg aria-hidden="true" width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="#8b95a1" stroke-width="1.5"><rect x="2.5" y="6" width="9" height="6" rx="1.5"></rect><path d="M4.5 6V4.5a2.5 2.5 0 0 1 5 0V6"></path></svg></sc-if>{{g.title}}</span>
+          </sc-if>
+          <sc-if value="{{g.divider}}" hint-placeholder-val="{{false}}"><span aria-hidden="true" style="display: block; height: 1px; margin: 4px 14px 8px; background: #e5e8eb"></span></sc-if>
+          <sc-for list="{{g.items}}" as="it" hint-placeholder-count="3">
+            <a href="{{it.href}}" title="{{it.name}}" aria-label="{{it.name}}" aria-current="{{it.current}}" style="{{it.style}}">
+              <svg aria-hidden="true" width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="{{it.d}}"></path></svg>
+              <sc-if value="{{side.open}}" hint-placeholder-val="{{true}}"><span style="flex: 1; min-width: 0; white-space: nowrap">{{it.name}}</span></sc-if>
+              <sc-if value="{{it.badge}}" hint-placeholder-val="{{false}}"><span style="{{it.badgeStyle}}">{{it.badge}}</span></sc-if>
+            </a>
+          </sc-for>
+        </div>
+      </sc-for>
+    </nav>
+    <div style="margin-top: auto; display: flex; flex-direction: column; gap: 8px">
+      <div style="{{side.userRow}}">
+        <span style="flex: none; width: 34px; height: 34px; border-radius: 17px; display: inline-flex; align-items: center; justify-content: center; background: #f2f4f6; color: #191f28; font-size: 14px; font-weight: 700">{{side.initial}}</span>
+        <sc-if value="{{side.open}}" hint-placeholder-val="{{true}}"><span style="display: flex; flex-direction: column; min-width: 0"><span style="font-size: 14px; line-height: 20px; font-weight: 600; white-space: nowrap">{{side.user}}</span><span style="font-size: 12px; line-height: 16px; color: #6b7684; white-space: nowrap">{{side.role}}</span></span></sc-if>
+      </div>
+      <button type="button" onClick="{{side.toggle}}" aria-expanded="{{side.expanded}}" aria-label="{{side.toggleLabel}}" title="{{side.toggleLabel}}" style="{{side.toggleStyle}}">
+        <svg aria-hidden="true" width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="{{side.chev}}"></path></svg>
+        <sc-if value="{{side.open}}" hint-placeholder-val="{{true}}"><span>메뉴 접기</span></sc-if>
+      </button>
+    </div>
+  </aside>
+
+  <div style="flex: 999 1 640px; min-width: 0; display: flex; flex-direction: column">
+
+
+    <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; width: 100%; max-width: 1440px; margin: 0 auto; box-sizing: border-box; padding: 22px 40px 0">
+      <label for="gq" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">학생, 수업, 학부모 검색</label>
+      <input id="gq" type="search" placeholder="학생 · 수업 · 학부모 번호 뒷자리" style="flex: 0 1 380px; min-width: 0; height: 44px; box-sizing: border-box; padding: 0 16px; border: 1px solid #e5e8eb; border-radius: 12px; background: #ffffff; font-size: 14px; color: #191f28">
+      <div style="flex: 1 1 0"></div>
+      <div role="group" aria-label="보기 권한" style="display: flex; padding: 4px; border-radius: 12px; background: #e9ecf0">
+        <sc-for list="{{roles}}" as="r" hint-placeholder-count="2">
+          <button type="button" onClick="{{r.pick}}" aria-pressed="{{r.pressed}}" style="{{r.style}}">{{r.label}}</button>
+        </sc-for>
+      </div>
+    </div>
+
+  <main style="max-width: 1440px; margin: 0 auto; box-sizing: border-box; padding: 24px 40px 56px; width: 100%; display: flex; flex-direction: column; gap: 22px">
+    <div style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 24px">
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px"><h1 style="margin: 0; font-size: 32px; line-height: 40px; font-weight: 700; letter-spacing: -0.02em">{{pageTitle}}</h1><span style="align-self: center; font-size: 12px; line-height: 16px; font-weight: 600; padding: 3px 8px; border-radius: 6px; background: #e9ecf0; color: #4e5968">예시 데이터</span></div>
+        <p style="margin: 0; font-size: 14px; line-height: 20px; color: #4e5968">{{pageSub}}</p>
+      </div>
+      <sc-if value="{{owner}}" hint-placeholder-val="{{true}}"><div style="display: flex; flex-wrap: wrap; gap: 8px">
+        <button type="button" style="height: 44px; padding: 0 16px; border: 0; border-radius: 10px; background: #f2f4f6; color: #191f28; font-size: 14px; font-weight: 600; cursor: pointer">엑셀로 한꺼번에 등록</button>
+        <button type="button" onClick="{{openNew}}" style="height: 44px; padding: 0 18px; border: 0; border-radius: 10px; background: #191f28; color: #ffffff; font-size: 14px; font-weight: 600; cursor: pointer">학생 등록</button>
+      </div></sc-if>
+    </div>
+
+    <div role="tablist" aria-label="학생 상태" style="display: flex; flex-wrap: wrap; gap: 0; border-bottom: 1px solid #e5e8eb">
+      <sc-for list="{{states}}" as="s" hint-placeholder-count="4">
+        <button type="button" role="tab" aria-selected="{{s.sel}}" style="{{s.style}}"><span>{{s.label}}</span><span style="font-size: 20px; font-weight: 700">{{s.n}}</span></button>
+      </sc-for>
+    </div>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start">
+
+      <section aria-label="학생 목록" style="flex: 1.2 1 560px; min-width: 0; background: #ffffff; border-radius: 20px;  padding: 8px 18px 12px">
+        <div style="overflow-x: auto">
+          <div style="min-width: 560px">
+            <div style="display: grid; grid-template-columns: minmax(150px, 1.3fr) minmax(130px, 1.2fr) 128px 112px; gap: 14px; padding: 12px 12px 8px; font-size: 12px; line-height: 16px; font-weight: 600; color: #6b7684">
+              <span>학생</span><span>수강 반</span><span>최근 4주 출석</span><span style="text-align: right">10월 평가</span>
+            </div>
+            <sc-for list="{{rows}}" as="r" hint-placeholder-count="8">
+              <button type="button" onClick="{{r.pick}}" aria-pressed="{{r.pressed}}" style="{{r.style}}">
+                <span style="display: flex; flex-direction: column; min-width: 0; text-align: left">
+                  <span style="display: flex; align-items: center; gap: 6px; font-weight: 600">{{r.name}}<sc-if value="{{r.flag}}" hint-placeholder-val="{{false}}"><span style="{{r.flagStyle}}">{{r.flag}}</span></sc-if></span>
+                  <span style="font-size: 12px; line-height: 16px; color: #6b7684">{{r.school}}</span>
+                </span>
+                <span style="display: flex; flex-direction: column; gap: 2px; min-width: 0; text-align: left">
+                  <sc-for list="{{r.classes}}" as="c" hint-placeholder-count="2"><span style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px; line-height: 18px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis"><span style="flex: none; width: 8px; height: 8px; border-radius: 2px; background: {{c.dot}}"></span>{{c.name}}</span></sc-for>
+                </span>
+                <span aria-label="{{r.attLabel}}" style="display: flex; flex-direction: column; min-width: 0; text-align: left; font-size: 13px; line-height: 18px">
+                  <span style="font-weight: 600; font-variant-numeric: tabular-nums">{{r.attMain}}</span>
+                  <span style="font-size: 12px; line-height: 16px; font-weight: 600; color: {{r.attFg}}">{{r.attSub}}</span>
+                </span>
+                <span style="display: flex; flex-direction: column; align-items: flex-end; font-size: 13px; line-height: 18px; font-variant-numeric: tabular-nums">
+                  <sc-for list="{{r.scores}}" as="s" hint-placeholder-count="2"><span><span style="color: #6b7684">{{s.k}}</span> <span style="font-weight: 700">{{s.v}}</span> <span style="font-weight: 600; color: {{s.fg}}">{{s.d}}</span></span></sc-for>
+                </span>
+              </button>
+            </sc-for>
+          </div>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 6px 16px; padding: 12px 6px 0; font-size: 12px; line-height: 16px; color: #4e5968">
+          <span style="color: #6b7684">출석은 최근 4주(수업 8회) 기준입니다. 지각도 출석으로 셉니다.</span>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; padding: 14px 4px 2px">
+          <span style="font-size: 13px; line-height: 18px; color: #6b7684; font-variant-numeric: tabular-nums">{{pg.range}}</span>
+          <nav aria-label="쪽 이동" style="display: flex; align-items: center; gap: 4px">
+            <button type="button" onClick="{{pg.prev}}" aria-label="이전 쪽" style="{{pg.prevStyle}}"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4.5 6.5 10l5.5 5.5"></path></svg></button>
+            <sc-for list="{{pg.pages}}" as="b" hint-placeholder-count="4"><button type="button" onClick="{{b.pick}}" aria-current="{{b.cur}}" style="{{b.style}}">{{b.n}}</button></sc-for>
+            <button type="button" onClick="{{pg.next}}" aria-label="다음 쪽" style="{{pg.nextStyle}}"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m8 4.5 5.5 5.5L8 15.5"></path></svg></button>
+          </nav>
+        </div>
+      </section>
+
+      <sc-if value="{{isDetail}}" hint-placeholder-val="{{true}}">
+        <section aria-label="학생 상세" style="flex: 1 1 460px; min-width: 0; background: #ffffff; border-radius: 20px;  padding: 24px; display: flex; flex-direction: column; gap: 18px">
+          <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 12px">
+            <div style="display: flex; flex-direction: column; gap: 6px">
+              <span style="font-size: 13px; line-height: 18px; color: #6b7684">{{s.school}} · {{s.since}}</span>
+              <h2 style="margin: 0; font-size: 32px; line-height: 40px; font-weight: 700">{{s.name}}</h2>
+              <div style="display: flex; flex-wrap: wrap; gap: 6px">
+                <sc-for list="{{s.classes}}" as="c" hint-placeholder-count="2"><span style="{{c.pill}}">{{c.name}} · {{c.teacher}}</span></sc-for>
+              </div>
+            </div>
+            <div style="display: flex; gap: 6px">
+              <button type="button" style="height: 40px; padding: 0 12px; border: 0; border-radius: 10px; background: #f2f4f6; color: #191f28; font-size: 13px; font-weight: 600; cursor: pointer">정보 수정</button>
+            </div>
+          </div>
+
+          <div role="tablist" aria-label="상세 보기" style="display: flex; gap: 4px; padding: 4px; border-radius: 12px; background: #f2f4f6; align-self: flex-start">
+            <sc-for list="{{dtabs}}" as="t" hint-placeholder-count="3"><button type="button" role="tab" aria-selected="{{t.sel}}" onClick="{{t.pick}}" style="{{t.style}}">{{t.label}}</button></sc-for>
+          </div>
+
+          <sc-if value="{{tabReport}}" hint-placeholder-val="{{true}}">
+            <div style="display: flex; flex-direction: column; gap: 14px">
+              <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px">
+                <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px">
+                  <label for="rmon" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">리포트 달</label>
+                  <select id="rmon" style="height: 40px; padding: 0 12px; border: 1px solid #e5e8eb; border-radius: 10px; background: #ffffff; font-size: 14px; font-weight: 600; color: #191f28"><option>10월 리포트</option><option>9월 리포트</option><option>8월 리포트</option></select>
+                  <span style="{{r.chip}}">{{r.state}}</span>
+                </div>
+                <a href="ParentReport.dc.html" style="font-size: 13px; font-weight: 600; color: #3a5ba0; text-decoration: none">학부모 화면으로 미리보기</a>
+              </div>
+              <sc-if value="{{r.blocked}}" hint-placeholder-val="{{false}}">
+                <p style="margin: 0; padding: 16px; border-radius: 12px; background: #f7f8fa; font-size: 14px; line-height: 22px; color: #4e5968">{{r.blockedText}}</p>
+              </sc-if>
+              <sc-if value="{{r.open}}" hint-placeholder-val="{{true}}">
+                <div style="display: flex; flex-direction: column; gap: 10px">
+                  <div style="display: flex; flex-direction: column; gap: 10px; padding: 16px; border-radius: 14px; background: #f7f8fa">
+                    <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px"><h3 style="margin: 0; font-size: 15px; line-height: 22px; font-weight: 700">10월 월말평가</h3><span style="font-size: 12px; line-height: 16px; color: #6b7684">성적 입력에서 자동으로 들어옵니다</span></div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px">
+                      <sc-for list="{{r.scores}}" as="k" hint-placeholder-count="2">
+                        <div style="display: flex; flex-direction: column; padding: 12px 14px; border-radius: 12px; background: #ffffff">
+                          <span style="font-size: 12px; line-height: 16px; font-weight: 600; color: {{k.fg}}">{{k.subject}}</span>
+                          <span style="display: flex; align-items: baseline; gap: 8px"><span style="font-size: 28px; line-height: 36px; font-weight: 700; font-variant-numeric: tabular-nums">{{k.v}}</span><span style="font-size: 13px; font-weight: 700; color: {{k.dFg}}">{{k.d}}</span></span>
+                          <span style="font-size: 12px; line-height: 16px; color: #6b7684">{{k.avg}}</span>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </div>
+                  <div style="display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 10px 14px; padding: 16px; border-radius: 14px; background: #f7f8fa; font-size: 14px; line-height: 20px">
+                    <span style="font-weight: 700">출석</span><span>{{r.att}}</span>
+                    <sc-for list="{{r.units}}" as="u" hint-placeholder-count="2"><span style="font-weight: 700">{{u.label}}</span><span>{{u.text}}</span></sc-for>
+                  </div>
+                  <div style="display: flex; flex-direction: column; gap: 12px; padding: 16px; border-radius: 14px; background: #f7f8fa">
+                    <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px"><h3 style="margin: 0; font-size: 15px; line-height: 22px; font-weight: 700">선생님 한마디</h3><span style="font-size: 12px; line-height: 16px; color: #6b7684">과목 선생님이 씁니다</span></div>
+                    <sc-for list="{{r.notes}}" as="n" hint-placeholder-count="2">
+                      <div style="display: flex; flex-direction: column; gap: 6px">
+                        <label for="{{n.id}}" style="font-size: 13px; line-height: 18px; font-weight: 600; color: #4e5968">{{n.label}}</label>
+                        <sc-if value="{{n.edit}}" hint-placeholder-val="{{true}}"><textarea id="{{n.id}}" rows="3" defaultValue="{{n.text}}" placeholder="이번 달 학생에 대해 한두 문장을 써 주세요" style="box-sizing: border-box; width: 100%; padding: 12px 14px; border: 1px solid #e5e8eb; border-radius: 10px; background: #ffffff; font: inherit; font-size: 14px; line-height: 22px; color: #191f28; resize: vertical"></textarea></sc-if>
+                        <sc-if value="{{n.view}}" hint-placeholder-val="{{false}}"><p id="{{n.id}}" style="margin: 0; padding: 12px 14px; border-radius: 10px; background: #ffffff; font-size: 14px; line-height: 22px; color: #4e5968">{{n.shown}}</p></sc-if>
+                      </div>
+                    </sc-for>
+                  </div>
+                  <div style="display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 8px; padding-top: 4px">
+                    <span style="margin-right: auto; font-size: 13px; line-height: 18px; color: #6b7684">{{r.hint}}</span>
+                    <button type="button" style="height: 44px; padding: 0 16px; border: 0; border-radius: 10px; background: #f2f4f6; color: #191f28; font-size: 14px; font-weight: 600; cursor: pointer">{{r.saveBtn}}</button>
+                    <sc-if value="{{owner}}" hint-placeholder-val="{{true}}"><button type="button" style="height: 44px; padding: 0 18px; border: 0; border-radius: 10px; background: #191f28; color: #ffffff; font-size: 14px; font-weight: 600; cursor: pointer">{{r.sendBtn}}</button></sc-if>
+                  </div>
+                </div>
+              </sc-if>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{tabOverview}}" hint-placeholder-val="{{false}}">
+            <div style="display: flex; flex-direction: column; gap: 18px">
+              <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px">
+                <sc-for list="{{s.stats}}" as="k" hint-placeholder-count="3">
+                  <div style="display: flex; flex-direction: column; padding: 14px; border-radius: 12px; background: {{k.bg}}">
+                    <span style="font-size: 12px; line-height: 16px; font-weight: 600; color: {{k.fg}}">{{k.label}}</span>
+                    <span style="font-size: 30px; line-height: 38px; font-weight: 700; color: {{k.valFg}}">{{k.value}}</span>
+                    <span style="font-size: 12px; line-height: 16px; color: {{k.subFg}}">{{k.sub}}</span>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 8px">
+                <div style="display: flex; justify-content: space-between; align-items: baseline"><h3 style="margin: 0; font-size: 15px; line-height: 22px; font-weight: 700">월말평가 추이</h3><span style="display: flex; gap: 12px; font-size: 12px; color: #4e5968"><span style="display: inline-flex; align-items: center; gap: 4px"><span style="width: 12px; height: 2px; background: #3a5ba0"></span>영어</span><span style="display: inline-flex; align-items: center; gap: 4px"><span style="width: 12px; height: 2px; background: #7a6a58"></span>수학</span></span></div>
+                <svg viewBox="0 0 520 170" role="img" aria-label="{{s.chartLabel}}" style="width: 100%; height: auto; display: block">
+                  <g stroke="#f0f2f4"><line x1="30" y1="20" x2="490" y2="20"></line><line x1="30" y1="65" x2="490" y2="65"></line><line x1="30" y1="110" x2="490" y2="110"></line></g>
+                  <line x1="30" y1="155" x2="490" y2="155" stroke="#d1d6db"></line>
+                  <g fill="#6b7684" font-size="11" font-family="Pretendard, sans-serif"><text x="22" y="24" text-anchor="end">100</text><text x="22" y="69" text-anchor="end">90</text><text x="22" y="114" text-anchor="end">80</text><text x="22" y="159" text-anchor="end">70</text></g>
+                  <polyline points="{{s.enPts}}" fill="none" stroke="#3a5ba0" stroke-width="2.5" stroke-linejoin="round"></polyline>
+                  <polyline points="{{s.maPts}}" fill="none" stroke="#7a6a58" stroke-width="2.5" stroke-linejoin="round"></polyline>
+                  <g fill="#6b7684" font-size="11" font-family="Pretendard, sans-serif"><text x="30" y="168" text-anchor="middle">5월</text><text x="122" y="168" text-anchor="middle">6월</text><text x="214" y="168" text-anchor="middle">7월</text><text x="306" y="168" text-anchor="middle">8월</text><text x="398" y="168" text-anchor="middle">9월</text><text x="490" y="168" text-anchor="end">10월</text></g>
+                </svg>
+              </div>
+              <div style="display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 8px 14px; padding-top: 14px; border-top: 1px solid #f0f2f4; font-size: 14px; line-height: 20px">
+                <span style="color: #6b7684">학부모</span><span>{{s.parent}}</span>
+                <span style="color: #6b7684">출결 번호</span><span style="font-variant-numeric: tabular-nums">{{s.pin}} · 키오스크 입실</span>
+                <span style="color: #6b7684">알림 수신</span><span>{{s.notify}}</span>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{tabTalk}}" hint-placeholder-val="{{false}}">
+            <div style="display: flex; flex-direction: column">
+              <sc-for list="{{s.talks}}" as="e" hint-placeholder-count="3">
+                <div style="display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 2px 14px; padding: 12px 0; border-top: 1px solid #f0f2f4">
+                  <span style="font-size: 13px; line-height: 20px; color: #6b7684; font-variant-numeric: tabular-nums">{{e.date}}</span>
+                  <span style="font-size: 12px; line-height: 16px; font-weight: 700; color: {{e.fg}}">{{e.kind}}</span>
+                  <span></span>
+                  <span style="font-size: 14px; line-height: 22px">{{e.text}}</span>
+                </div>
+              </sc-for>
+              <label for="memo" style="margin-top: 12px; font-size: 14px; line-height: 20px; font-weight: 600">새 메모</label>
+              <input id="memo" type="text" placeholder="상담 내용이나 전달 사항을 남기세요" style="margin-top: 6px; height: 44px; padding: 0 14px; border: 1px solid #d1d6db; border-radius: 10px; font-size: 14px">
+            </div>
+          </sc-if>
+
+          <sc-if value="{{tabPay}}" hint-placeholder-val="{{false}}">
+            <div style="display: flex; flex-direction: column; gap: 12px">
+              <span style="display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; font-size: 12px; line-height: 16px; font-weight: 700; padding: 3px 10px; border-radius: 999px; background: #f2f4f6; color: #4e5968">원장·데스크만 보입니다</span>
+              <div style="display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 8px 14px; font-size: 14px; line-height: 20px">
+                <span style="color: #6b7684">월 수업료</span><span style="font-weight: 700">{{s.fee}}</span>
+                <span style="color: #6b7684">결제일</span><span>매월 5일 · 알림톡 청구</span>
+                <span style="color: #6b7684">10월</span><span style="{{s.payStyle}}">{{s.pay}}</span>
+              </div>
+              <a href="Billing.dc.html" style="font-size: 14px; font-weight: 600">수납 메뉴에서 전체 내역 보기</a>
+            </div>
+          </sc-if>
+        </section>
+      </sc-if>
+
+      <sc-if value="{{isNew}}" hint-placeholder-val="{{false}}">
+        <section aria-labelledby="news" style="flex: 1 1 460px; min-width: 0; background: #ffffff; border-radius: 20px;  padding: 26px; display: flex; flex-direction: column; gap: 20px">
+          <div style="display: flex; flex-direction: column; gap: 4px">
+            <h2 id="news" style="margin: 0; font-size: 28px; line-height: 36px; font-weight: 700">새 학생 등록</h2>
+            <p style="margin: 0; font-size: 14px; line-height: 22px; color: #6b7684">저장하면 학부모님께 앱 초대와 첫 청구서가 함께 갑니다.</p>
+          </div>
+          <fieldset style="border: 0; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px 16px">
+            <legend style="padding: 0 0 10px; font-size: 13px; line-height: 18px; font-weight: 700; letter-spacing: 0.06em; color: #191f28">01 학생</legend>
+            <div style="display: flex; flex-direction: column; gap: 6px"><label for="s1" style="font-size: 14px; font-weight: 600">이름</label><input id="s1" type="text" value="최하준" style="height: 44px; padding: 0 14px; border: 1px solid #d1d6db; border-radius: 10px; font-size: 14px"></div>
+            <div style="display: flex; flex-direction: column; gap: 6px"><label for="s2" style="font-size: 14px; font-weight: 600">학교</label><input id="s2" type="text" value="정발중" style="height: 44px; padding: 0 14px; border: 1px solid #d1d6db; border-radius: 10px; font-size: 14px"></div>
+            <div style="display: flex; flex-direction: column; gap: 6px"><label for="s3" style="font-size: 14px; font-weight: 600">학년</label><select id="s3" style="height: 44px; padding: 0 12px; border: 1px solid #d1d6db; border-radius: 10px; background: #ffffff; font-size: 14px"><option>중1</option><option>중2</option><option>중3</option></select></div>
+          </fieldset>
+          <fieldset style="border: 0; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px 16px">
+            <legend style="padding: 0 0 10px; font-size: 13px; line-height: 18px; font-weight: 700; letter-spacing: 0.06em; color: #191f28">02 학부모</legend>
+            <div style="display: flex; flex-direction: column; gap: 6px"><label for="p1" style="font-size: 14px; font-weight: 600">관계</label><select id="p1" style="height: 44px; padding: 0 12px; border: 1px solid #d1d6db; border-radius: 10px; background: #ffffff; font-size: 14px"><option>어머니</option><option>아버지</option><option>보호자</option></select></div>
+            <div style="display: flex; flex-direction: column; gap: 6px"><label for="p2" style="font-size: 14px; font-weight: 600">휴대폰</label><input id="p2" type="tel" value="010-0000-4471" style="height: 44px; padding: 0 14px; border: 1px solid #d1d6db; border-radius: 10px; font-size: 14px"></div>
+            <div style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 14px; font-weight: 600">출결 번호</span><span style="display: flex; align-items: center; height: 44px; padding: 0 14px; border-radius: 10px; background: #eef2f9; color: #191f28; font-weight: 700; font-variant-numeric: tabular-nums; box-sizing: border-box">4471 · 자동</span></div>
+          </fieldset>
+          <fieldset style="border: 0; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px">
+            <legend style="padding: 0 0 10px; font-size: 13px; line-height: 18px; font-weight: 700; letter-spacing: 0.06em; color: #191f28">03 수강 반 <span style="font-weight: 500; letter-spacing: 0; color: #6b7684">· 레벨 테스트 수학 68</span></legend>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px">
+              <sc-for list="{{pick}}" as="c" hint-placeholder-count="4"><button type="button" aria-pressed="{{c.on}}" onClick="{{c.toggle}}" style="{{c.style}}"><span>{{c.name}}</span><span style="font-size: 12px; font-weight: 500; opacity: 0.85">{{c.note}}</span></button></sc-for>
+            </div>
+          </fieldset>
+          <fieldset style="border: 0; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px">
+            <legend style="padding: 0 0 10px; font-size: 13px; line-height: 18px; font-weight: 700; letter-spacing: 0.06em; color: #191f28">04 수납 설정</legend>
+            <div style="display: flex; flex-wrap: wrap; align-items: flex-end; gap: 16px">
+              <div style="display: flex; flex-direction: column"><span style="font-size: 13px; color: #6b7684">월 수업료 (선택한 반 합계)</span><span style="font-size: 28px; line-height: 36px; font-weight: 700">{{fee}}</span></div>
+              <div style="display: flex; flex-direction: column; gap: 6px"><label for="b1" style="font-size: 14px; font-weight: 600">결제일</label><select id="b1" style="height: 44px; padding: 0 12px; border: 1px solid #d1d6db; border-radius: 10px; background: #ffffff; font-size: 14px"><option>매월 5일</option><option>매월 15일</option><option>등록일 기준</option></select></div>
+              <label style="display: inline-flex; align-items: center; gap: 8px; height: 44px; font-size: 14px"><input type="checkbox" checked style="width: 18px; height: 18px; accent-color: #191f28">11월 첫 달 일할 계산</label>
+            </div>
+          </fieldset>
+          <div style="display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; padding-top: 16px; border-top: 1px solid #e5e8eb">
+            <button type="button" onClick="{{cancelNew}}" style="height: 44px; padding: 0 16px; border: 0; border-radius: 10px; background: #f2f4f6; color: #191f28; font-size: 14px; font-weight: 600; cursor: pointer">취소</button>
+            <button type="button" style="height: 44px; padding: 0 16px; border: 0; border-radius: 10px; background: #f2f4f6; color: #191f28; font-size: 14px; font-weight: 600; cursor: pointer">체험생으로 등록</button>
+            <button type="button" style="height: 44px; padding: 0 18px; border: 0; border-radius: 10px; background: #191f28; color: #ffffff; font-size: 14px; font-weight: 600; cursor: pointer">재원생으로 등록</button>
+          </div>
+        </section>
+      </sc-if>
+    </div>
+  </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1480}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { sel: 0, mode: 'detail', tab: 'report', picked: ['중1 수학 A'] }; }
+  renderVals() {
+    const side = (() => {
+      const collapsed = !!(this.state && this.state.side);
+      const own = !(this.state && this.state.role === 'teacher');
+      const D = {
+        home: 'M3.5 9.2 10 4l6.5 5.2V16a1 1 0 0 1-1 1H12v-4.5H8V17H4.5a1 1 0 0 1-1-1z',
+        cal: 'M5 4.5h10a2 2 0 0 1 2 2V15a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6.5a2 2 0 0 1 2-2zM3 8.5h14M7 3v3M13 3v3',
+        att: 'M3 10a7 7 0 1 0 14 0a7 7 0 1 0-14 0M7 10.2l2 2 4-4.4',
+        stu: 'M5 7a3 3 0 1 0 6 0a3 3 0 1 0-6 0M2.5 16.5c.7-2.6 2.8-4 5.5-4s4.8 1.4 5.5 4M13.5 4.6a2.6 2.6 0 0 1 0 5M15 12.8c1.3.6 2.1 1.9 2.5 3.7',
+        cls: 'M4 4.5A1.5 1.5 0 0 1 5.5 3H16v12H5.5A1.5 1.5 0 0 0 4 16.5zM4 16.5A1.5 1.5 0 0 0 5.5 18H16v-3M7.5 7h5',
+        grd: 'M4 16.5V10M10 16.5V4.5M16 16.5V8M2.5 16.5h15',
+        talk: 'M4 4.5h12a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H9l-4 3v-3H4a1 1 0 0 1-1-1v-8a1 1 0 0 1 1-1zM7 9h6',
+        bill: 'M4 5h12a1.5 1.5 0 0 1 1.5 1.5v7A1.5 1.5 0 0 1 16 15H4a1.5 1.5 0 0 1-1.5-1.5v-7A1.5 1.5 0 0 1 4 5zM2.5 8.5h15M6 12h3',
+        staff: 'M6 3h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zM8 8a2 2 0 1 0 4 0a2 2 0 1 0-4 0M7 14c.6-1.4 1.7-2 3-2s2.4.6 3 2',
+        set: 'M3.5 6h13M3.5 14h13M6 6a1.8 1.8 0 1 0 3.6 0a1.8 1.8 0 1 0-3.6 0M10.4 14a1.8 1.8 0 1 0 3.6 0a1.8 1.8 0 1 0-3.6 0',
+        pen: 'M4 16l1-3.5L13.5 4a1.4 1.4 0 0 1 2 0l.5.5a1.4 1.4 0 0 1 0 2L7.5 15zM11.5 6l2.5 2.5',
+        lock: 'M5.5 9h9a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-9a1 1 0 0 1-1-1v-6a1 1 0 0 1 1-1zM7 9V6.5a3 3 0 0 1 6 0V9'
+      };
+      const it = (key, name, icon, href, badge, warn) => {
+        const on = key === 'students';
+        return { name, d: D[icon], href, current: on ? 'page' : 'false', badge: (!collapsed && badge) ? badge : '',
+          badgeStyle: 'flex: none; font-size: 12px; line-height: 16px; font-weight: 600; padding: 1px 8px; border-radius: 999px; font-variant-numeric: tabular-nums; ' + (warn ? 'background: #fbf3e2; color: #8a5a00;' : 'background: #f2f4f6; color: #4e5968;'),
+          style: 'display: flex; align-items: center; gap: 12px; min-height: 42px; border-radius: 10px; text-decoration: none; font-size: 15px; line-height: 20px; ' + (collapsed ? 'justify-content: center; padding: 0;' : 'padding: 0 12px;') + (on ? ' background: #eef2f9; color: #2c4682; font-weight: 600;' : ' color: #4e5968;') };
+      };
+      const G = (title, items, lock) => ({ title, items, lock: !!lock, showTitle: !collapsed, divider: collapsed && title !== '오늘' });
+      const groups = own ? [
+        G('오늘', [it('home', '홈', 'home', 'Light.dc.html'), it('cal', '일정', 'cal', 'Schedule.dc.html'), it('att', '출결·보강', 'att', 'Attendance.dc.html', '2', true)]),
+        G('학생·수업', [it('students', '학생', 'stu', 'Students.dc.html', '128'), it('cls', '수업', 'cls', 'Classes.dc.html', '18'), it('grd', '성적 입력', 'grd', 'Grades.dc.html'), it('talk', '상담', 'talk', 'Counsel.dc.html', '2', true)]),
+        G('원장 전용', [it('billing', '수납', 'bill', 'Billing.dc.html', '3', true), it('staff', '강사', 'staff', 'Staff.dc.html'), it('perm', '권한', 'lock', 'Permissions.dc.html'), it('set', '설정', 'set', '#')], true)
+      ] : [
+        G('오늘', [it('home', '홈', 'home', 'Light.dc.html'), it('cal', '내 시간표', 'cal', 'Schedule.dc.html'), it('att', '출석부', 'att', 'Attendance.dc.html', '2', true)]),
+        G('내 반', [it('students', '내 반 학생', 'stu', 'Students.dc.html', '38'), it('cls', '내 수업', 'cls', 'Classes.dc.html', '4'), it('grd', '성적 입력', 'pen', 'Grades.dc.html', '11', true), it('talk', '상담 요청', 'talk', 'Counsel.dc.html')])
+      ];
+      return { groups, open: !collapsed, closed: collapsed, expanded: String(!collapsed),
+        user: own ? '[원장 이름]' : '박지은', role: own ? '원장 · 일산 본원' : '영어 강사 · 4개 반', initial: own ? '원' : '박',
+        toggle: () => this.setState({ side: !collapsed }),
+        toggleLabel: collapsed ? '메뉴 펼치기' : '메뉴 접기',
+        chev: collapsed ? 'M8 5l5 5-5 5' : 'M12 5l-5 5 5 5',
+        aside: 'flex: 1 1 ' + (collapsed ? '76px' : '244px') + '; max-width: ' + (collapsed ? '76px' : '244px') + '; box-sizing: border-box; padding: 22px ' + (collapsed ? '12px' : '14px') + ' 18px; background: #ffffff; display: flex; flex-direction: column; gap: 26px; box-shadow: 1px 0 0 #eceff2;',
+        head: 'display: flex; align-items: center; min-height: 44px; ' + (collapsed ? 'justify-content: center;' : 'padding: 0 10px;'),
+        userRow: 'display: flex; align-items: center; gap: 10px; padding: 10px ' + (collapsed ? '0; justify-content: center;' : '8px;') + ' border-radius: 12px; background: #f7f8fa;',
+        toggleStyle: 'display: flex; align-items: center; gap: 8px; min-height: 40px; border: 0; border-radius: 10px; background: transparent; color: #6b7684; font-size: 13px; font-weight: 600; cursor: pointer; ' + (collapsed ? 'justify-content: center; padding: 0;' : 'padding: 0 12px;') };
+    })();
+    const owner = !(this.state && this.state.role === 'teacher');
+    const rseg = (on) => 'min-height: 36px; padding: 0 14px; border: 0; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; ' + (on ? 'background: #ffffff; color: #191f28; box-shadow: 0 1px 2px rgba(27,29,30,0.12);' : 'background: transparent; color: #6b7684;');
+    /* prototype only: the role switch; the real app picks the view from the signed-in account */
+    const roles = [['owner', '원장으로 보기'], ['teacher', '강사로 보기']].map(([id, label]) => ({ label, pressed: String(id === 'owner' ? owner : !owner), style: rseg(id === 'owner' ? owner : !owner), pick: () => this.setState({ role: id }) }));
+    const CL = { '영어 심화': ['#3a5ba0', '박지은'], '수학 B': ['#7a6a58', '이도현'], '수학 A': ['#7a6a58', '이도현'], '영어 기초': ['#3a5ba0', '박지은'], '중1 영어': ['#3a5ba0', '김나래'] };
+    const S = [
+      { name: '김서윤', school: '백석중 2학년', since: '재원 1년 7개월', cls: ['영어 심화', '수학 B'], att: 'PPPLPPPP', en: [78,81,80,85,84,89], ma: [72,70,75,74,79,82], flag: '미납', flagK: 'warn', parent: '어머니 · 010-****-2814', pin: '2814', notify: '학원친구 앱 · 열람률 높음', fee: '420,000원', pay: '미납 · 5일 지남', payK: 'due',
+        talks: [['10.24', '수납', '10월 수업료 안내 1회 · 열람함'], ['10.20', '상담', '박지은 · 서술형에서 시간 부족, 주 1회 클리닉 권유'], ['09.30', '상담', '학부모 전화 · 수학 A반 이동 문의, 10월 성적 보고 결정']] },
+      { name: '강민재', school: '백석중 2학년', since: '재원 2년 1개월', cls: ['영어 심화', '수학 B'], att: 'PPPPPPPP', en: [88,90,87,91,92,94], ma: [85,88,86,90,89,91], parent: '아버지 · 010-****-7720', pin: '7720', notify: '알림톡', fee: '420,000원', pay: '완납 · 10.04 카드', payK: 'ok', talks: [['10.10', '상담', '고교 진학 상담 · 특목고 대비 문의']] },
+      { name: '오준서', school: '정발중 2학년', since: '재원 8개월', cls: ['영어 심화', '수학 A'], att: 'PPAPPPAA', en: [70,72,71,74,73,69], ma: [68,70,66,71,72,70], flag: '결석 2', flagK: 'alert', parent: '어머니 · 010-****-3305', pin: '3305', notify: '알림톡 · 최근 미열람', fee: '420,000원', pay: '완납 · 10.05 모바일', payK: 'ok', talks: [['10.28', '상담 요청', '박지은 · 2주 연속 결석 2회, 원장 확인 필요'], ['10.29', '출결', '17:20 미등원 · 연락 없음']] },
+      { name: '한예린', school: '백석중 2학년', since: '재원 1년', cls: ['영어 심화'], att: 'PPPPPLPP', en: [80,82,84,83,86,87], ma: null, flag: '미납', flagK: 'warn', parent: '어머니 · 010-****-0937', pin: '0937', notify: '알림톡 · 미열람', fee: '220,000원', pay: '미납 · 5일 지남', payK: 'due', talks: [] },
+      { name: '정도윤', school: '정발중 1학년', since: '재원 5개월', cls: ['수학 A'], att: 'PPPPPPPP', en: null, ma: [74,76,75,78,80,81], flag: '미납', flagK: 'warn', parent: '아버지 · 010-****-5521', pin: '5521', notify: '학원친구 앱', fee: '200,000원', pay: '미납 · 2일 지남', payK: 'due', talks: [['10.27', '상담', '원장 · 수학 반 이동 상담 예정 (10.27 19:00)']] },
+      { name: '이건우', school: '백석중 2학년', since: '재원 1년 3개월', cls: ['영어 심화', '수학 B'], att: 'PLPPLPPL', en: [82,80,83,81,84,83], ma: [77,79,78,80,78,81], flag: '지각 3', flagK: 'warn', parent: '어머니 · 010-****-6142', pin: '6142', notify: '학원친구 앱', fee: '420,000원', pay: '완납 · 10.05 카드', payK: 'ok', talks: [['10.29', '보강', '10.30 16:00 보강 확정 · 1강의실']] },
+      { name: '서민아', school: '마두초 6학년', since: '체험 2회차', cls: ['영어 기초'], att: '------PP', en: null, ma: null, flag: '체험', flagK: 'info', parent: '어머니 · 010-****-8890', pin: '8890', notify: '알림톡', fee: '체험 무료', pay: '체험 중 · 등록 상담 예정', payK: 'info', talks: [['10.30', '체험', '영어 체험 2회차 예정 · 박지은']] },
+      { name: '남궁율', school: '정발중 2학년', since: '재원 3년', cls: ['영어 심화'], att: 'PPPPPPPP', en: [90,92,91,93,95,96], ma: null, parent: '아버지 · 010-****-4410', pin: '4410', notify: '학원친구 앱', fee: '220,000원', pay: '완납 · 10.03 카드', payK: 'ok', talks: [] }
+    ];
+    /* more example students so the list has pages; generated from a fixed pattern */
+    const EXTRA = ['강도윤', '권서아', '김하준', '류지안', '문시우', '박서현', '배준우', '서하은', '송지호', '신유나', '안도현', '양서준', '오하린', '유건우', '윤지우', '이서연', '임하람', '장민준', '전예준', '정서윤', '조은서', '차도하', '최유진', '하지민', '한서진', '허준서', '홍예린', '황지성', '고은우', '남다은', '노태윤', '백소율'];
+    EXTRA.forEach((name, i) => { const c = [['영어 심화', '수학 B'], ['수학 A'], ['영어 기초'], ['중1 영어', '수학 A'], ['영어 심화']][i % 5];
+      const a = ['PPPPPPPP', 'PPPLPPPP', 'PPAPPPPP', 'PPPPPPLP', 'PPPPPPPP', 'PLPPPPPP'][i % 6];
+      const sc = (b) => [b, b + 2, b + 1, b + 3, b + 2, b + 4];
+      S.push({ name, school: ['백석중', '정발중', '한빛중', '마두초'][i % 4] + ' ' + (1 + i % 3) + '학년', since: '재원 ' + (3 + i % 20) + '개월', cls: c, att: a,
+        en: c.some((x) => x.indexOf('영어') >= 0) ? sc(70 + (i * 7) % 20) : null, ma: c.some((x) => x.indexOf('수학') >= 0) ? sc(68 + (i * 5) % 22) : null,
+        parent: (i % 2 ? '아버지' : '어머니') + ' · 010-****-' + String(1000 + i * 137).slice(-4), pin: String(1000 + i * 137).slice(-4), notify: '알림톡', fee: '220,000원', pay: '완납 · 10.05 카드', payK: 'ok', talks: [] }); });
+    const MY = ['영어 심화', '영어 기초'];
+    const SV = owner ? S : S.filter((p) => p.cls.some((c) => MY.includes(c)));
+    const isNew = this.state.mode === 'new';
+    const flagSt = { warn: 'background: #fbf3e2; color: #8a5a00;', alert: 'background: #fbeae8; color: #b42318;', info: 'background: #eef2f9; color: #191f28;' };
+    const cell = (c) => 'display: block; width: 12px; height: 12px; border-radius: 2px; ' + (c === 'P' ? 'background: #191f28;' : c === 'L' ? 'background: #b07a1a;' : c === 'A' ? 'box-shadow: inset 0 0 0 2px #b42318;' : 'background: #f0f2f4;');
+    const sc = (k, arr) => { if (!arr) return null; const v = arr[5], d = v - arr[4]; return { k, v: String(v), d: (d >= 0 ? '▲' : '▼') + Math.abs(d), fg: d >= 0 ? '#1d6b3a' : '#b42318' }; };
+    const attOf = (str) => { const a = str.replace(/-/g, ''); const ab = a.split('').filter((c) => c === 'A').length, lt = a.split('').filter((c) => c === 'L').length; return { n: a.length, ok: a.length - ab, ab, lt }; };
+    /* pagination instead of long scrolling (user, 2026-10-29) */
+    const pager = (total, size, cur, go, unit) => { const n = Math.max(1, Math.ceil(total / size)), p = Math.min(cur, n - 1);
+      const btn = (on, dis) => 'min-width: 36px; height: 36px; padding: 0 8px; border: 0; border-radius: 10px; font-family: inherit; font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; display: inline-flex; align-items: center; justify-content: center; ' + (on ? 'background: #191f28; color: #ffffff; cursor: default;' : dis ? 'background: transparent; color: #c5cbd3; cursor: default;' : 'background: #f2f4f6; color: #191f28; cursor: pointer;');
+      return { page: p, start: p * size, end: Math.min(total, (p + 1) * size),
+        range: total ? (p * size + 1) + '–' + Math.min(total, (p + 1) * size) + ' / 전체 ' + total + unit : '0' + unit,
+        pages: Array.from({ length: n }, (_, i) => ({ n: String(i + 1), cur: i === p ? 'page' : 'false', style: btn(i === p, false), pick: () => go(i) })),
+        prev: () => { if (p > 0) go(p - 1); }, next: () => { if (p < n - 1) go(p + 1); }, prevStyle: btn(false, p === 0), nextStyle: btn(false, p >= n - 1) }; };
+    const pg = pager(SV.length, 10, this.state.sp || 0, (i) => this.setState({ sp: i }), '명');
+    const rows = SV.slice(pg.start, pg.end).map((p, j) => {
+      const i = pg.start + j;
+      const on = !isNew && this.state.sel === i;
+      const at = attOf(p.att);
+      return { name: p.name, school: p.school, flag: (owner || p.flag !== '미납') ? (p.flag || null) : null, flagStyle: 'font-size: 11px; line-height: 14px; font-weight: 700; padding: 2px 7px; border-radius: 999px; ' + (flagSt[p.flagK] || ''),
+        classes: p.cls.map((n) => ({ name: n, dot: CL[n][0] })),
+        attMain: at.n < 8 ? '체험 ' + at.n + '회 중 ' + at.ok + '회' : '출석 ' + at.ok + ' / ' + at.n,
+        attSub: at.ab ? '결석 ' + at.ab + '회' : at.lt ? '지각 ' + at.lt + '회' : '모두 출석', attFg: at.ab ? '#b42318' : at.lt ? '#8a5a00' : '#1d6b3a', attLabel: '최근 8회 출결 ' + p.att.split('').map((c) => c === 'P' ? '출석' : c === 'L' ? '지각' : c === 'A' ? '결석' : '없음').join(', '),
+        scores: [sc('영', p.en), sc('수', p.ma)].filter(Boolean),
+        pressed: String(on), pick: () => this.setState({ sel: i, mode: 'detail', tab: 'report' }),
+        style: 'display: grid; grid-template-columns: minmax(150px, 1.3fr) minmax(130px, 1.2fr) 128px 112px; gap: 14px; align-items: center; width: 100%; padding: 12px; border: 0; border-top: ' + (j === 0 ? '0' : '1px solid #eceef1') + '; border-radius: 0; cursor: pointer; font-size: 15px; color: #191f28; background: ' + (on ? '#eef2f9' : 'transparent') + ';' };
+    });
+    const states = (owner ? [['재원', 128, true], ['체험·대기', 6], ['휴원', 2], ['퇴원', 14]] : [['내 반 학생', 38, true], ['체험 중', 1]]).map(([label, n, sel]) => ({ label, n: String(n), sel: String(!!sel),
+      style: 'display: inline-flex; align-items: baseline; gap: 8px; min-height: 48px; padding: 0 18px; border: 0; background: transparent; cursor: pointer; font-size: 14px; font-weight: 600; color: ' + (sel ? '#191f28' : '#6b7684') + '; box-shadow: ' + (sel ? 'inset 0 -3px 0 #191f28' : 'none') + ';' }));
+    const p = SV[this.state.sel] || SV[0];
+    const pts = (arr) => arr ? arr.map((v, i) => (30 + i * 92) + ',' + (155 - (v - 70) * 4.5)).join(' ') : '';
+    const att = p.att.replace(/-/g, '');
+    const attPct = att.length ? Math.round(att.split('').filter((c) => c !== 'A').length / att.length * 100) : 0;
+    const main = p.en || p.ma;
+    const s = {
+      name: p.name, school: p.school, since: p.since, parent: p.parent, pin: p.pin, notify: p.notify, fee: p.fee, pay: p.pay,
+      payStyle: 'font-weight: 700; color: ' + (p.payK === 'due' ? '#8a5a00' : p.payK === 'ok' ? '#1d6b3a' : '#191f28') + ';',
+      classes: p.cls.map((n) => ({ name: n, teacher: CL[n][1], pill: 'font-size: 12px; line-height: 16px; font-weight: 600; padding: 4px 10px; border-radius: 999px; color: #ffffff; background: ' + CL[n][0] + ';' })),
+      stats: [
+        { label: '최근 4주 출석', value: attPct + '%', sub: att.length + '회 중 ' + att.split('').filter((c) => c === 'L').length + '회 지각', bg: '#191f28', fg: '#d1d6db', valFg: '#ffffff', subFg: '#d1d6db' },
+        { label: '영어 10월', value: p.en ? String(p.en[5]) : '—', sub: p.en ? '학년 평균 80.0' : '수강 안 함', bg: '#eef2f9', fg: '#2c4682', valFg: '#191f28', subFg: '#4e5968' },
+        { label: '수학 10월', value: p.ma ? String(p.ma[5]) : '—', sub: p.ma ? '학년 평균 76.5' : '수강 안 함', bg: '#f2f4f6', fg: '#4e5968', valFg: '#191f28', subFg: '#4e5968' }
+      ],
+      enPts: pts(p.en), maPts: pts(p.ma),
+      chartLabel: main ? '5월부터 10월까지 월말평가 점수 추이' : '아직 평가 기록이 없습니다',
+      talks: p.talks.length ? p.talks.map(([date, kind, text]) => ({ date, kind, text, fg: kind === '수납' ? '#8a5a00' : kind === '상담 요청' || kind === '출결' ? '#b42318' : '#191f28' })) : [{ date: '', kind: '기록 없음', text: '아직 상담이나 메모가 없습니다.', fg: '#6b7684' }]
+    };
+    /* the student's monthly report draft: scores and attendance come in automatically; each subject teacher writes a note */
+    const UNIT = { '영어 심화': 'Unit 6 관계대명사 (교재 p.84–91)', '영어 기초': 'Unit 3 현재진행형', '수학 A': '일차함수의 활용', '수학 B': '일차함수의 그래프', '중1 영어': 'Unit 4 조동사' };
+    const NOTE = { '김서윤': { '영어 심화': '관계대명사 단원에서 실수가 눈에 띄게 줄었어요. 서술형은 시간 배분을 연습하고 있습니다.', '수학 B': '그래프 해석이 좋아졌습니다. 활용 문제에서 식 세우기를 더 연습하겠습니다.' },
+      '강민재': { '영어 심화': '서술형 완성도가 높습니다. 어휘 확장을 위해 원서 읽기를 권합니다.', '수학 B': '꾸준히 상위권입니다. 심화 문제에 도전하고 있어요.' },
+      '남궁율': { '영어 심화': '이번 달 반에서 가장 높은 점수입니다. 발표도 적극적이에요.' } };
+    const SENT = { '강민재': '10.31 18:02 보냄, 열람함', '남궁율': '10.31 18:02 보냄, 열람함' };
+    const subjOf = (c) => c.indexOf('영어') >= 0 ? '영어' : '수학';
+    const trial = p.att.indexOf('-') >= 0;
+    const r = (() => {
+      if (trial) return { blocked: true, open: false, blockedText: '체험 중인 학생은 월간 리포트를 보내지 않습니다. 체험이 끝나면 등록 상담에서 결과를 안내합니다.', state: '해당 없음', chip: 'font-size: 12px; line-height: 16px; font-weight: 600; padding: 3px 9px; border-radius: 999px; background: #f2f4f6; color: #4e5968' };
+      const sent = SENT[p.name];
+      const a = attOf(p.att);
+      const mk = (k, arr, avg) => arr ? { subject: k + ' 10월', v: String(arr[5]), d: (arr[5] - arr[4] >= 0 ? '▲' : '▼') + Math.abs(arr[5] - arr[4]) + ' 지난달보다', dFg: arr[5] - arr[4] >= 0 ? '#1d6b3a' : '#a0521c', avg: '학년 평균 ' + avg, fg: k === '영어' ? '#2c4682' : '#5e5143' } : null;
+      const notes = p.cls.map((c, i) => { const t = CL[c][1], txt = (NOTE[p.name] || {})[c] || ''; const mine = owner || t === '박지은';
+        return { id: 'nt' + i, label: subjOf(c) + ', ' + t + ' 선생님' + (mine ? '' : ' (읽기만)'), text: txt, shown: txt || '아직 쓰지 않았습니다', edit: mine, view: !mine }; });
+      const missing = notes.filter((n) => !n.text).length;
+      return { blocked: false, open: true,
+        state: sent ? sent : missing ? '작성 중, 한마디 ' + missing + '개 남음' : '보낼 준비 완료',
+        chip: 'font-size: 12px; line-height: 16px; font-weight: 600; padding: 3px 9px; border-radius: 999px; ' + (sent ? 'background: #eef2f9; color: #2c4682;' : missing ? 'background: #fbf3e2; color: #8a5a00;' : 'background: #eaf4ec; color: #1d6b3a;'),
+        scores: [mk('영어', p.en, '80.0'), mk('수학', p.ma, '76.5')].filter(Boolean),
+        att: '최근 4주 수업 ' + a.n + '회 중 ' + a.ok + '회 출석' + (a.lt ? ', 지각 ' + a.lt + '회' : '') + (a.ab ? ', 결석 ' + a.ab + '회' : ''),
+        units: p.cls.map((c) => ({ label: subjOf(c) + ' 진도', text: UNIT[c] || '' })),
+        notes,
+        sendBtn: sent ? '고쳐서 다시 보내기' : '학부모에게 보내기', saveBtn: owner ? '초안 저장' : '한마디 저장',
+        hint: !owner ? '리포트는 원장님만 보냅니다. 한마디를 저장하면 원장님이 확인합니다.' : sent ? '보낸 리포트를 고쳐 다시 보내면 학부모님께 새 알림이 갑니다.' : '보내면 ' + p.parent.split(' · ')[0] + '께 알림톡으로 갑니다.' };
+    })();
+    const tabsDef = owner ? [['report', '10월 리포트'], ['overview', '개요'], ['talk', '상담·메모'], ['pay', '수납']] : [['report', '10월 리포트'], ['overview', '개요'], ['talk', '상담·메모']];
+    const dtabs = tabsDef.map(([id, label]) => ({ label, sel: String(this.state.tab === id), pick: () => this.setState({ tab: id }),
+      style: 'min-height: 36px; padding: 0 14px; border: 0; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; ' + (this.state.tab === id ? 'background: #ffffff; color: #191f28; box-shadow: 0 1px 2px rgba(27,29,30,0.12);' : 'background: transparent; color: #6b7684;') }));
+    const opts = [['중1 수학 A', '화·목 15:00 · 8/10명', 200000], ['중1 수학 심화', '월·수 17:00 · 10/10 마감', 0], ['중1 영어', '화·목 18:00 · 12/14명', 200000], ['중1 영어 문법 특강', '토 10:00 · 6/12명', 80000]];
+    const pick = opts.map(([name, note, price]) => {
+      const full = price === 0;
+      const on = this.state.picked.includes(name);
+      return { name, note, on: String(on), toggle: full ? null : () => this.setState({ picked: on ? this.state.picked.filter((x) => x !== name) : this.state.picked.concat([name]) }),
+        style: 'display: inline-flex; flex-direction: column; align-items: flex-start; min-height: 54px; padding: 6px 14px; border-radius: 10px; font-size: 14px; font-weight: 600; text-align: left; ' + (full ? 'border: 0; background: #f2f4f6; color: #8b95a1; cursor: not-allowed;' : on ? 'border: 0; background: #191f28; color: #ffffff; cursor: pointer;' : 'border: 0; background: #f2f4f6; color: #191f28; cursor: pointer;') };
+    });
+    const total = opts.filter(([n]) => this.state.picked.includes(n)).reduce((a, o) => a + o[2], 0);
+    return { roles, owner, isTeacher: !owner, side, rows, states, s, dtabs, pick, fee: total.toLocaleString('ko-KR') + '원',
+      isDetail: !isNew, isNew, r, tabReport: this.state.tab === 'report', tabOverview: this.state.tab === 'overview', tabTalk: this.state.tab === 'talk', tabPay: owner && this.state.tab === 'pay',
+      pageTitle: owner ? '학생 관리' : '내 반 학생', pageSub: owner ? '재원생 128명입니다. 학생을 고르면 오른쪽에 그 학생의 이번 달 리포트가 열립니다.' : '박지은 강사가 맡은 반의 학생입니다. 학생을 고르면 리포트에 내 과목 한마디를 씁니다. 보내기는 원장님이 합니다.',
+      pg,
+      openNew: () => this.setState({ mode: 'new' }), cancelNew: () => this.setState({ mode: 'detail' }) };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>원장 전용 · 수납</title>
+<script src="dc-runtime.js"></script>
+<script src="role.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@font-face{font-family:Pretendard;font-weight:400;font-display:swap;src:url(font.woff2) format('woff2')}
+@font-face{font-family:Pretendard;font-weight:500;font-display:swap;src:url(font.woff2) format('woff2')}
+@font-face{font-family:Pretendard;font-weight:600;font-display:swap;src:url(font.woff2) format('woff2')}
+@font-face{font-family:Pretendard;font-weight:700;font-display:swap;src:url(font.woff2) format('woff2')}
+body{margin:0;background:#f4f5f7}
+a{color:#191f28}a:hover{color:#191f28}
+button,input,select{font-family:inherit}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #191f28;outline-offset:2px}
+</style>
+</helmet>
+<div style="display: flex; flex-wrap: wrap; align-items: stretch; min-height: 1400px; background: #f4f5f7; color: #191f28; font-family: Pretendard, 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, sans-serif; letter-spacing: -0.005em; font-size: 15px; line-height: 24px">
+  <aside aria-label="주 메뉴" style="{{side.aside}}">
+    <div style="{{side.head}}">
+      <sc-if value="{{side.open}}" hint-placeholder-val="{{true}}"><img src="logo.png" alt="더 위너스학원" style="height: 28px; width: auto"></sc-if>
+      <sc-if value="{{side.closed}}" hint-placeholder-val="{{false}}"><img src="logo.png" alt="더 위너스학원" style="width: 26px; height: 26px"></sc-if>
+    </div>
+    <nav style="display: flex; flex-direction: column; gap: 20px">
+      <sc-for list="{{side.groups}}" as="g" hint-placeholder-count="3">
+        <div style="display: flex; flex-direction: column; gap: 2px">
+          <sc-if value="{{g.showTitle}}" hint-placeholder-val="{{true}}">
+            <span style="display: flex; align-items: center; gap: 6px; padding: 0 12px 6px; font-size: 12px; line-height: 16px; font-weight: 600; color: #8b95a1">
+              <sc-if value="{{g.lock}}" hint-placeholder-val="{{false}}"><svg aria-hidden="true" width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="#8b95a1" stroke-width="1.5"><rect x="2.5" y="6" width="9" height="6" rx="1.5"></rect><path d="M4.5 6V4.5a2.5 2.5 0 0 1 5 0V6"></path></svg></sc-if>{{g.title}}</span>
+          </sc-if>
+          <sc-if value="{{g.divider}}" hint-placeholder-val="{{false}}"><span aria-hidden="true" style="display: block; height: 1px; margin: 4px 14px 8px; background: #e5e8eb"></span></sc-if>
+          <sc-for list="{{g.items}}" as="it" hint-placeholder-count="3">
+            <a href="{{it.href}}" title="{{it.name}}" aria-label="{{it.name}}" aria-current="{{it.current}}" style="{{it.style}}">
+              <svg aria-hidden="true" width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="{{it.d}}"></path></svg>
+              <sc-if value="{{side.open}}" hint-placeholder-val="{{true}}"><span style="flex: 1; min-width: 0; white-space: nowrap">{{it.name}}</span></sc-if>
+              <sc-if value="{{it.badge}}" hint-placeholder-val="{{false}}"><span style="{{it.badgeStyle}}">{{it.badge}}</span></sc-if>
+            </a>
+          </sc-for>
+        </div>
+      </sc-for>
+    </nav>
+    <div style="margin-top: auto; display: flex; flex-direction: column; gap: 8px">
+      <div style="{{side.userRow}}">
+        <span style="flex: none; width: 34px; height: 34px; border-radius: 17px; display: inline-flex; align-items: center; justify-content: center; background: #f2f4f6; color: #191f28; font-size: 14px; font-weight: 700">{{side.initial}}</span>
+        <sc-if value="{{side.open}}" hint-placeholder-val="{{true}}"><span style="display: flex; flex-direction: column; min-width: 0"><span style="font-size: 14px; line-height: 20px; font-weight: 600; white-space: nowrap">{{side.user}}</span><span style="font-size: 12px; line-height: 16px; color: #6b7684; white-space: nowrap">{{side.role}}</span></span></sc-if>
+      </div>
+      <button type="button" onClick="{{side.toggle}}" aria-expanded="{{side.expanded}}" aria-label="{{side.toggleLabel}}" title="{{side.toggleLabel}}" style="{{side.toggleStyle}}">
+        <svg aria-hidden="true" width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="{{side.chev}}"></path></svg>
+        <sc-if value="{{side.open}}" hint-placeholder-val="{{true}}"><span>메뉴 접기</span></sc-if>
+      </button>
+    </div>
+  </aside>
+
+  <div style="flex: 999 1 640px; min-width: 0; display: flex; flex-direction: column">
+
+
+    <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; width: 100%; max-width: 1440px; margin: 0 auto; box-sizing: border-box; padding: 22px 40px 0">
+      <label for="gq" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">학생, 수업, 학부모 검색</label>
+      <input id="gq" type="search" placeholder="학생 · 수업 · 학부모 번호 뒷자리" style="flex: 0 1 380px; min-width: 0; height: 44px; box-sizing: border-box; padding: 0 16px; border: 1px solid #e5e8eb; border-radius: 12px; background: #ffffff; font-size: 14px; color: #191f28">
+      <div style="flex: 1 1 0"></div>
+      <div role="group" aria-label="보기 권한" style="display: flex; padding: 4px; border-radius: 12px; background: #e9ecf0">
+        <sc-for list="{{roles}}" as="r" hint-placeholder-count="2">
+          <button type="button" onClick="{{r.pick}}" aria-pressed="{{r.pressed}}" style="{{r.style}}">{{r.label}}</button>
+        </sc-for>
+      </div>
+    </div>
+
+  <main style="max-width: 1440px; margin: 0 auto; box-sizing: border-box; padding: 24px 40px 56px; width: 100%; display: flex; flex-direction: column; gap: 24px">
+    <sc-if value="{{isTeacher}}" hint-placeholder-val="{{false}}">
+      <section aria-label="권한 안내" style="background: #ffffff; border-radius: 20px; padding: 48px 32px; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center">
+        <span style="display: inline-flex; width: 48px; height: 48px; border-radius: 24px; align-items: center; justify-content: center; background: #f2f4f6; color: #4e5968"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="2.5" y="6" width="9" height="6" rx="1.5"></rect><path d="M4.5 6V4.5a2.5 2.5 0 0 1 5 0V6"></path></svg></span>
+        <h1 style="margin: 0; font-size: 19px; line-height: 26px; font-weight: 700">원장만 볼 수 있는 화면입니다</h1>
+        <p style="margin: 0; font-size: 15px; line-height: 22px; color: #4e5968">{{lockText}}</p>
+      </section>
+    </sc-if>
+    <sc-if value="{{owner}}" hint-placeholder-val="{{true}}">
+
+    <div style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 24px">
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px"><h1 style="margin: 0; font-size: 32px; line-height: 40px; font-weight: 700; letter-spacing: -0.02em">수납</h1><span style="align-self: center; font-size: 12px; line-height: 16px; font-weight: 600; padding: 3px 8px; border-radius: 6px; background: #e9ecf0; color: #4e5968">예시 데이터</span></div>
+        <p style="margin: 0; font-size: 14px; line-height: 20px; color: #4e5968">2026년 10월 청구와 수납입니다. 강사 계정에는 이 메뉴가 보이지 않습니다.</p>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px">
+        <button type="button" style="height: 44px; padding: 0 16px; border: 0; border-radius: 10px; background: #f2f4f6; color: #191f28; font-size: 14px; font-weight: 600; cursor: pointer">엑셀로 내려받기</button>
+        <button type="button" style="height: 44px; padding: 0 18px; border: 0; border-radius: 10px; background: #191f28; color: #ffffff; font-size: 14px; font-weight: 600; cursor: pointer">11월 청구서 준비</button>
+      </div>
+    </div>
+
+    <section aria-label="10월 수납 요약" style="background: #ffffff; border-radius: 20px; padding: 24px; display: flex; flex-direction: column; gap: 18px">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px 24px">
+        <div style="display: flex; flex-direction: column"><span style="font-size: 13px; line-height: 18px; color: #6b7684">청구</span><span style="font-size: 32px; line-height: 40px; font-weight: 700; letter-spacing: -0.03em">3,920<span style="font-size: 15px; font-weight: 600"> 만 원</span></span><span style="font-size: 13px; line-height: 18px; color: #6b7684">132건 · 재원생 128명</span></div>
+        <div style="display: flex; flex-direction: column"><span style="font-size: 13px; line-height: 18px; color: #191f28; font-weight: 600">수납 완료 87%</span><span style="font-size: 32px; line-height: 40px; font-weight: 700; letter-spacing: -0.03em">3,412<span style="font-size: 15px; font-weight: 600"> 만 원</span></span><span style="font-size: 13px; line-height: 18px; color: #1d6b3a; font-weight: 600">▲ 지난달보다 4%p</span></div>
+        <div style="display: flex; flex-direction: column"><span style="font-size: 13px; line-height: 18px; color: #8a5a00; font-weight: 600">미납</span><span style="font-size: 32px; line-height: 40px; font-weight: 700; letter-spacing: -0.03em">84<span style="font-size: 15px; font-weight: 600"> 만 원</span></span><span style="font-size: 13px; line-height: 18px; color: #6b7684">3건 · 가장 오래된 건 5일</span></div>
+        <div style="display: flex; flex-direction: column"><span style="font-size: 13px; line-height: 18px; color: #6b7684">수납 예정 · 환불</span><span style="font-size: 32px; line-height: 40px; font-weight: 700; letter-spacing: -0.03em">340<span style="font-size: 15px; font-weight: 600"> 만 원</span></span><span style="font-size: 13px; line-height: 18px; color: #6b7684">결제일 전 8건 · 환불 1건 42만 원</span></div>
+      </div>
+      <div role="img" aria-label="청구액 중 수납 87%, 수납 예정 9%, 미납 3%, 환불 1%" style="display: grid; grid-template-columns: 87fr 9fr 3fr 1fr; gap: 3px; height: 16px">
+        <span style="background: #191f28; border-radius: 4px 0 0 4px"></span>
+        <span style="background: #e5e8eb"></span>
+        <span style="background: #b07a1a"></span>
+        <span style="background: #ffffff; box-shadow: inset 0 0 0 1.5px #b42318; border-radius: 0 4px 4px 0"></span>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 13px; line-height: 18px; color: #4e5968">
+        <span style="display: inline-flex; align-items: center; gap: 6px"><span style="width: 12px; height: 12px; border-radius: 3px; background: #191f28"></span>수납 완료</span>
+        <span style="display: inline-flex; align-items: center; gap: 6px"><span style="width: 12px; height: 12px; border-radius: 3px; background: #e5e8eb"></span>결제일 전</span>
+        <span style="display: inline-flex; align-items: center; gap: 6px"><span style="width: 12px; height: 12px; border-radius: 3px; background: #b07a1a"></span>미납</span>
+        <span style="display: inline-flex; align-items: center; gap: 6px"><span style="width: 12px; height: 12px; border-radius: 3px; box-shadow: inset 0 0 0 1.5px #b42318"></span>환불</span>
+      </div>
+    </section>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: stretch">
+
+      <section aria-labelledby="due" style="flex: 3 1 600px; min-width: 0; background: #ffffff; border-radius: 20px; padding: 22px; display: flex; flex-direction: column; gap: 12px">
+        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px">
+          <h2 id="due" style="margin: 0; font-size: 19px; line-height: 26px; font-weight: 700">미납 3건</h2>
+          <button type="button" style="height: 40px; padding: 0 14px; border: 0; border-radius: 10px; background: #191f28; color: #ffffff; font-size: 13px; font-weight: 600; cursor: pointer">3명에게 한 번에 안내</button>
+        </div>
+        <div style="overflow-x: auto">
+          <div style="display: flex; flex-direction: column; gap: 2px">
+            <div style="display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.5fr) 84px 52px minmax(0, 1fr) auto; column-gap: 16px; align-items: center; padding: 6px 12px 8px; font-size: 12px; line-height: 16px; font-weight: 600; color: #6b7684">
+              <span>학생</span><span>청구 항목</span><span style="text-align: right">금액</span><span style="text-align: right">경과</span><span>마지막 안내</span><span></span>
+            </div>
+            <sc-for list="{{dues}}" as="d" hint-placeholder-count="3">
+              <div style="display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.5fr) 84px 52px minmax(0, 1fr) auto; column-gap: 16px; align-items: center; padding: 10px 12px; border-top: {{d.line}}">
+                <span style="display: flex; flex-direction: column; min-width: 0"><span style="font-weight: 600">{{d.name}}</span><span style="font-size: 12px; line-height: 16px; color: #6b7684; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{d.grade}}</span></span>
+                <span title="{{d.item}}" style="font-size: 14px; line-height: 20px; color: #4e5968; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{d.item}}</span>
+                <span style="font-weight: 700; text-align: right; font-variant-numeric: tabular-nums">{{d.amt}}</span>
+                <span style="display: flex; justify-content: flex-end"><span style="{{d.ageStyle}}">{{d.age}}</span></span>
+                <span style="font-size: 13px; line-height: 18px; color: #6b7684; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{d.last}}</span>
+                <span style="display: flex; gap: 6px; justify-content: flex-end">
+                  <button type="button" style="height: 36px; padding: 0 12px; border: 0; border-radius: 10px; background: {{d.btnBg}}; color: #191f28; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap">안내</button>
+                  <button type="button" style="height: 36px; padding: 0 12px; border: 0; border-radius: 10px; background: {{d.btnBg}}; color: #191f28; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap">현장 수납</button>
+                </span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        <p style="margin: 0; font-size: 13px; line-height: 18px; color: #6b7684">미납 학생이 키오스크로 입실하면 결제 안내가 함께 뜹니다. 자동 재안내는 7일 간격입니다.</p>
+      </section>
+
+      <div style="flex: 2 1 340px; min-width: 0; display: flex; flex-direction: column; gap: 24px">
+        <section aria-labelledby="pm" style="background: #ffffff; border-radius: 20px; padding: 22px; display: flex; flex-direction: column; gap: 12px">
+          <h2 id="pm" style="margin: 0; font-size: 19px; line-height: 26px; font-weight: 700">결제 수단</h2>
+          <sc-for list="{{methods}}" as="m" hint-placeholder-count="4">
+            <div style="display: grid; grid-template-columns: 84px minmax(0, 1fr) 52px; gap: 12px; align-items: center">
+              <span style="font-size: 14px; line-height: 20px">{{m.label}}</span>
+              <div style="height: 12px; border-radius: 6px; background: #f2f4f6"><div style="height: 100%; width: {{m.w}}; border-radius: 6px; background: {{m.fill}}"></div></div>
+              <span style="font-size: 14px; line-height: 20px; font-weight: 700; text-align: right; font-variant-numeric: tabular-nums">{{m.pct}}</span>
+            </div>
+          </sc-for>
+        </section>
+        <section aria-labelledby="next" style="background: #ffffff; border-radius: 20px; padding: 22px; display: flex; flex-direction: column; gap: 4px">
+          <h2 id="next" style="margin: 0 0 8px; font-size: 19px; line-height: 26px; font-weight: 700">다가오는 청구</h2>
+          <div style="display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 2px 12px; padding: 12px 0; border-top: 0"><span style="font-weight: 700">11.1</span><span style="font-weight: 600">11월 수업료 자동 발송 · 118건</span><span></span><span style="font-size: 13px; line-height: 18px; color: #6b7684">알림톡과 앱 푸시 · 결제일 11.5</span></div>
+          <div style="display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 2px 12px; padding: 12px 0; border-top: 1px solid #eceef1"><span style="font-weight: 700">수시</span><span style="font-weight: 600">횟수권 재등록 · 2명</span><span></span><span style="font-size: 13px; line-height: 18px; color: #6b7684">잔여 2회가 되면 재등록 청구서 발송</span></div>
+          <div style="display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 2px 12px; padding: 12px 0; border-top: 1px solid #eceef1"><span style="font-weight: 700">11.3</span><span style="font-weight: 600">교재비 · 중등 겨울 교재 64건</span><span></span><span style="font-size: 13px; line-height: 18px; color: #6b7684">수업료와 함께 청구할지 선택 필요</span></div>
+        </section>
+      </div>
+    </div>
+
+    <section aria-labelledby="daily" style="background: #ffffff; border-radius: 20px; padding: 22px; display: flex; flex-direction: column; gap: 14px">
+      <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px 24px">
+        <h2 id="daily" style="margin: 0; font-size: 19px; line-height: 26px; font-weight: 700">일별 수납</h2>
+        <span style="font-size: 13px; line-height: 18px; color: #6b7684">결제일(5일)과 신규 등록일에 몰립니다 · 단위 만 원</span>
+      </div>
+      <div style="overflow-x: auto">
+        <div role="img" aria-label="10월 일별 수납액. 7일 520만 원이 가장 많고 결제일 전후 1일부터 12일 사이에 집중됩니다" style="min-width: 760px; display: grid; grid-template-columns: repeat(31, minmax(0, 1fr)); gap: 4px; align-items: end; height: 170px">
+          <sc-for list="{{daily}}" as="d" hint-placeholder-count="31">
+            <div style="display: flex; flex-direction: column; align-items: stretch; justify-content: flex-end; height: 100%; gap: 4px">
+              <span style="font-size: 10px; line-height: 12px; text-align: center; color: #4e5968; font-variant-numeric: tabular-nums">{{d.v}}</span>
+              <div style="{{d.style}}"></div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="min-width: 760px; display: grid; grid-template-columns: repeat(31, minmax(0, 1fr)); gap: 4px; padding-top: 6px; border-top: 1px solid #d1d6db">
+          <sc-for list="{{daily}}" as="d" hint-placeholder-count="31"><span style="{{d.labStyle}}">{{d.n}}</span></sc-for>
+        </div>
+      </div>
+    </section>
+    </sc-if>
+  </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1400}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const side = (() => {
+      const collapsed = !!(this.state && this.state.side);
+      const own = !(this.state && this.state.role === 'teacher');
+      const D = {
+        home: 'M3.5 9.2 10 4l6.5 5.2V16a1 1 0 0 1-1 1H12v-4.5H8V17H4.5a1 1 0 0 1-1-1z',
+        cal: 'M5 4.5h10a2 2 0 0 1 2 2V15a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6.5a2 2 0 0 1 2-2zM3 8.5h14M7 3v3M13 3v3',
+        att: 'M3 10a7 7 0 1 0 14 0a7 7 0 1 0-14 0M7 10.2l2 2 4-4.4',
+        stu: 'M5 7a3 3 0 1 0 6 0a3 3 0 1 0-6 0M2.5 16.5c.7-2.6 2.8-4 5.5-4s4.8 1.4 5.5 4M13.5 4.6a2.6 2.6 0 0 1 0 5M15 12.8c1.3.6 2.1 1.9 2.5 3.7',
+        cls: 'M4 4.5A1.5 1.5 0 0 1 5.5 3H16v12H5.5A1.5 1.5 0 0 0 4 16.5zM4 16.5A1.5 1.5 0 0 0 5.5 18H16v-3M7.5 7h5',
+        grd: 'M4 16.5V10M10 16.5V4.5M16 16.5V8M2.5 16.5h15',
+        talk: 'M4 4.5h12a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H9l-4 3v-3H4a1 1 0 0 1-1-1v-8a1 1 0 0 1 1-1zM7 9h6',
+        bill: 'M4 5h12a1.5 1.5 0 0 1 1.5 1.5v7A1.5 1.5 0 0 1 16 15H4a1.5 1.5 0 0 1-1.5-1.5v-7A1.5 1.5 0 0 1 4 5zM2.5 8.5h15M6 12h3',
+        staff: 'M6 3h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zM8 8a2 2 0 1 0 4 0a2 2 0 1 0-4 0M7 14c.6-1.4 1.7-2 3-2s2.4.6 3 2',
+        set: 'M3.5 6h13M3.5 14h13M6 6a1.8 1.8 0 1 0 3.6 0a1.8 1.8 0 1 0-3.6 0M10.4 14a1.8 1.8 0 1 0 3.6 0a1.8 1.8 0 1 0-3.6 0',
+        pen: 'M4 16l1-3.5L13.5 4a1.4 1.4 0 0 1 2 0l.5.5a1.4 1.4 0 0 1 0 2L7.5 15zM11.5 6l2.5 2.5',
+        lock: 'M5.5 9h9a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-9a1 1 0 0 1-1-1v-6a1 1 0 0 1 1-1zM7 9V6.5a3 3 0 0 1 6 0V9'
+      };
+      const it = (key, name, icon, href, badge, warn) => {
+        const on = key === 'billing';
+        return { name, d: D[icon], href, current: on ? 'page' : 'false', badge: (!collapsed && badge) ? badge : '',
+          badgeStyle: 'flex: none; font-size: 12px; line-height: 16px; font-weight: 600; padding: 1px 8px; border-radius: 999px; font-variant-numeric: tabular-nums; ' + (warn ? 'background: #fbf3e2; color: #8a5a00;' : 'background: #f2f4f6; color: #4e5968;'),
+          style: 'display: flex; align-items: center; gap: 12px; min-height: 42px; border-radius: 10px; text-decoration: none; font-size: 15px; line-height: 20px; ' + (collapsed ? 'justify-content: center; padding: 0;' : 'padding: 0 12px;') + (on ? ' background: #eef2f9; color: #2c4682; font-weight: 600;' : ' color: #4e5968;') };
+      };
+      const G = (title, items, lock) => ({ title, items, lock: !!lock, showTitle: !collapsed, divider: collapsed && title !== '오늘' });
+      const groups = own ? [
+        G('오늘', [it('home', '홈', 'home', 'Light.dc.html'), it('cal', '일정', 'cal', 'Schedule.dc.html'), it('att', '출결·보강', 'att', 'Attendance.dc.html', '2', true)]),
+        G('학생·수업', [it('students', '학생', 'stu', 'Students.dc.html', '128'), it('cls', '수업', 'cls', 'Classes.dc.html', '18'), it('grd', '성적 입력', 'grd', 'Grades.dc.html'), it('talk', '상담', 'talk', 'Counsel.dc.html', '2', true)]),
+        G('원장 전용', [it('billing', '수납', 'bill', 'Billing.dc.html', '3', true), it('staff', '강사', 'staff', 'Staff.dc.html'), it('perm', '권한', 'lock', 'Permissions.dc.html'), it('set', '설정', 'set', '#')], true)
+      ] : [
+        G('오늘', [it('home', '홈', 'home', 'Light.dc.html'), it('cal', '내 시간표', 'cal', 'Schedule.dc.html'), it('att', '출석부', 'att', 'Attendance.dc.html', '2', true)]),
+        G('내 반', [it('students', '내 반 학생', 'stu', 'Students.dc.html', '38'), it('cls', '내 수업', 'cls', 'Classes.dc.html', '4'), it('grd', '성적 입력', 'pen', 'Grades.dc.html', '11', true), it('talk', '상담 요청', 'talk', 'Counsel.dc.html')])
+      ];
+      return { groups, open: !collapsed, closed: collapsed, expanded: String(!collapsed),
+        user: own ? '[원장 이름]' : '박지은', role: own ? '원장 · 일산 본원' : '영어 강사 · 4개 반', initial: own ? '원' : '박',
+        toggle: () => this.setState({ side: !collapsed }),
+        toggleLabel: collapsed ? '메뉴 펼치기' : '메뉴 접기',
+        chev: collapsed ? 'M8 5l5 5-5 5' : 'M12 5l-5 5 5 5',
+        aside: 'flex: 1 1 ' + (collapsed ? '76px' : '244px') + '; max-width: ' + (collapsed ? '76px' : '244px') + '; box-sizing: border-box; padding: 22px ' + (collapsed ? '12px' : '14px') + ' 18px; background: #ffffff; display: flex; flex-direction: column; gap: 26px; box-shadow: 1px 0 0 #eceff2;',
+        head: 'display: flex; align-items: center; min-height: 44px; ' + (collapsed ? 'justify-content: center;' : 'padding: 0 10px;'),
+        userRow: 'display: flex; align-items: center; gap: 10px; padding: 10px ' + (collapsed ? '0; justify-content: center;' : '8px;') + ' border-radius: 12px; background: #f7f8fa;',
+        toggleStyle: 'display: flex; align-items: center; gap: 8px; min-height: 40px; border: 0; border-radius: 10px; background: transparent; color: #6b7684; font-size: 13px; font-weight: 600; cursor: pointer; ' + (collapsed ? 'justify-content: center; padding: 0;' : 'padding: 0 12px;') };
+    })();
+    const owner = !(this.state && this.state.role === 'teacher');
+    const rseg = (on) => 'min-height: 36px; padding: 0 14px; border: 0; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; ' + (on ? 'background: #ffffff; color: #191f28; box-shadow: 0 1px 2px rgba(27,29,30,0.12);' : 'background: transparent; color: #6b7684;');
+    /* prototype only: the role switch; the real app picks the view from the signed-in account */
+    const roles = [['owner', '원장으로 보기'], ['teacher', '강사로 보기']].map(([id, label]) => ({ label, pressed: String(id === 'owner' ? owner : !owner), style: rseg(id === 'owner' ? owner : !owner), pick: () => this.setState({ role: id }) }));
+    const age = (d) => ({ age: d + '일', ageStyle: 'font-size: 12px; line-height: 16px; font-weight: 700; padding: 3px 9px; border-radius: 999px; ' + (d >= 5 ? 'background: #fbeae8; color: #b42318;' : 'background: #fbf3e2; color: #8a5a00;') + ' white-space: nowrap;' });
+    const dues = [
+      Object.assign({ name: '김서윤', grade: '중2, 어머니 010-****-2814', item: '10월 수업료 (영어 심화, 수학 B)', amt: '420,000', last: '10.24 알림톡, 열람함' }, age(5)),
+      Object.assign({ name: '한예린', grade: '중2, 어머니 010-****-0937', item: '10월 수업료 (영어 심화)', amt: '220,000', last: '10.24 알림톡, 미열람' }, age(5)),
+      Object.assign({ name: '정도윤', grade: '중1, 아버지 010-****-5521', item: '10월 수업료 (수학 A)', amt: '200,000', last: '10.27 키오스크 안내' }, age(2))
+    ].map((d, i) => Object.assign(d, { line: (i === 0 ? '0' : '1px solid #eceef1'), btnBg: '#f2f4f6' }));
+    const methods = [
+      { label: '카드 결제', pct: '52%', w: '52%', fill: '#191f28' },
+      { label: '모바일 링크', pct: '31%', w: '31%', fill: '#3a5ba0' },
+      { label: '계좌이체', pct: '12%', w: '12%', fill: '#b07a1a' },
+      { label: '현금', pct: '5%', w: '5%', fill: '#d1d6db' }
+    ];
+    const amts = [412, 286, 0, 0, 520, 388, 214, 176, 402, 64, 0, 98, 120, 0, 86, 152, 0, 0, 40, -42, 118, 0, 96, 0, 0, 64, 0, 52, 0, 0, 0];
+    const daily = amts.map((a, i) => {
+      const n = i + 1;
+      const future = n > 29;
+      const refund = a < 0;
+      const h = refund ? 18 : Math.round(Math.max(a, 0) / 520 * 120);
+      return {
+        n: String(n), v: a ? String(a) : '',
+        labStyle: 'font-size: 11px; line-height: 14px; text-align: center; font-variant-numeric: tabular-nums; ' + (n === 29 ? 'font-weight: 700; color: #191f28;' : (n === 5 ? 'font-weight: 700; color: #191f28;' : 'color: #6b7684;')),
+        style: 'height: ' + (a ? h : 2) + 'px; border-radius: 3px 3px 0 0; ' + (refund ? 'background: #ffffff; box-shadow: inset 0 0 0 1.5px #b42318;' : (future ? 'background: #e5e8eb;' : (a ? 'background: #191f28;' : 'background: #e5e8eb;')))
+      };
+    });
+    return { lockText: '강사 계정에는 수납 메뉴가 보이지 않고, 주소로 들어와도 수납 정보는 내려가지 않습니다.', roles, owner, isTeacher: !owner, side, dues, methods, daily };
+  }
+}
+</script>
+</body>
+</html>

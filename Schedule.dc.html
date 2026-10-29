@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>일정</title>
+<script src="dc-runtime.js"></script>
+<script src="role.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@font-face{font-family:Pretendard;font-weight:400;font-display:swap;src:url(font.woff2) format('woff2')}
+@font-face{font-family:Pretendard;font-weight:500;font-display:swap;src:url(font.woff2) format('woff2')}
+@font-face{font-family:Pretendard;font-weight:600;font-display:swap;src:url(font.woff2) format('woff2')}
+@font-face{font-family:Pretendard;font-weight:700;font-display:swap;src:url(font.woff2) format('woff2')}
+body{margin:0;background:#ffffff}
+a{color:inherit}
+button,input{font-family:inherit}
+button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(--pri);outline-offset:2px}
+</style>
+</helmet>
+<div style="display: flex; flex-wrap: wrap; align-items: stretch; {{palVars}} background: var(--bg); color: var(--ink); font-family: Pretendard, 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, sans-serif; letter-spacing: -0.005em; font-size: 15px; line-height: 24px">
+  <aside aria-label="주 메뉴" style="{{side.aside}}">
+    <div style="{{side.head}}">
+      <sc-if value="{{side.open}}" hint-placeholder-val="{{true}}"><img src="logo.png" alt="더 위너스학원" style="height: 28px; width: auto"></sc-if>
+      <sc-if value="{{side.closed}}" hint-placeholder-val="{{false}}"><img src="logo.png" alt="더 위너스학원" style="width: 26px; height: 26px"></sc-if>
+    </div>
+    <nav style="display: flex; flex-direction: column; gap: 20px">
+      <sc-for list="{{side.groups}}" as="g" hint-placeholder-count="3">
+        <div style="display: flex; flex-direction: column; gap: 2px">
+          <sc-if value="{{g.showTitle}}" hint-placeholder-val="{{true}}">
+            <span style="display: flex; align-items: center; gap: 6px; padding: 0 12px 6px; font-size: 12px; line-height: 16px; font-weight: 600; color: #8b95a1">
+              <sc-if value="{{g.lock}}" hint-placeholder-val="{{false}}"><svg aria-hidden="true" width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="#8b95a1" stroke-width="1.5"><rect x="2.5" y="6" width="9" height="6" rx="1.5"></rect><path d="M4.5 6V4.5a2.5 2.5 0 0 1 5 0V6"></path></svg></sc-if>{{g.title}}</span>
+          </sc-if>
+          <sc-if value="{{g.divider}}" hint-placeholder-val="{{false}}"><span aria-hidden="true" style="display: block; height: 1px; margin: 4px 14px 8px; background: #e5e8eb"></span></sc-if>
+          <sc-for list="{{g.items}}" as="it" hint-placeholder-count="3">
+            <a href="{{it.href}}" title="{{it.name}}" aria-label="{{it.name}}" aria-current="{{it.current}}" style="{{it.style}}">
+              <svg aria-hidden="true" width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="{{it.d}}"></path></svg>
+              <sc-if value="{{side.open}}" hint-placeholder-val="{{true}}"><span style="flex: 1; min-width: 0; white-space: nowrap">{{it.name}}</span></sc-if>
+              <sc-if value="{{it.badge}}" hint-placeholder-val="{{false}}"><span style="{{it.badgeStyle}}">{{it.badge}}</span></sc-if>
+            </a>
+          </sc-for>
+        </div>
+      </sc-for>
+    </nav>
+    <div style="margin-top: auto; display: flex; flex-direction: column; gap: 8px">
+      <div style="{{side.userRow}}">
+        <span style="flex: none; width: 34px; height: 34px; border-radius: 17px; display: inline-flex; align-items: center; justify-content: center; background: #f2f4f6; color: #191f28; font-size: 14px; font-weight: 700">{{side.initial}}</span>
+        <sc-if value="{{side.open}}" hint-placeholder-val="{{true}}"><span style="display: flex; flex-direction: column; min-width: 0"><span style="font-size: 14px; line-height: 20px; font-weight: 600; white-space: nowrap">{{side.user}}</span><span style="font-size: 12px; line-height: 16px; color: #6b7684; white-space: nowrap">{{side.role}}</span></span></sc-if>
+      </div>
+      <button type="button" onClick="{{side.toggle}}" aria-expanded="{{side.expanded}}" aria-label="{{side.toggleLabel}}" title="{{side.toggleLabel}}" style="{{side.toggleStyle}}">
+        <svg aria-hidden="true" width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="{{side.chev}}"></path></svg>
+        <sc-if value="{{side.open}}" hint-placeholder-val="{{true}}"><span>메뉴 접기</span></sc-if>
+      </button>
+    </div>
+  </aside>
+
+  <div style="flex: 999 1 640px; min-width: 0; display: flex; flex-direction: column">
+
+
+    <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; width: 100%; max-width: 1440px; margin: 0 auto; box-sizing: border-box; padding: 22px 40px 0">
+      <label for="gq" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">학생, 수업, 학부모 검색</label>
+      <input id="gq" type="search" placeholder="학생 · 수업 · 학부모 번호 뒷자리" style="flex: 0 1 380px; min-width: 0; height: 44px; box-sizing: border-box; padding: 0 16px; border: 1px solid #e5e8eb; border-radius: 12px; background: #ffffff; font-size: 14px; color: #191f28">
+      <div style="flex: 1 1 0"></div>
+      <div role="group" aria-label="보기 권한" style="display: flex; padding: 4px; border-radius: 12px; background: #e9ecf0">
+        <sc-for list="{{roles}}" as="r" hint-placeholder-count="2">
+          <button type="button" onClick="{{r.pick}}" aria-pressed="{{r.pressed}}" style="{{r.style}}">{{r.label}}</button>
+        </sc-for>
+      </div>
+    </div>
+
+  <main style="max-width: 1440px; margin: 0 auto; box-sizing: border-box; padding: 24px 40px 56px; width: 100%; display: flex; flex-direction: column; gap: 24px">
+
+    <div style="display: flex; flex-direction: column; gap: 6px">
+        <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px"><h1 style="margin: 0; font-size: 32px; line-height: 40px; font-weight: 700; letter-spacing: -0.02em">일정</h1><span style="align-self: center; font-size: 12px; line-height: 16px; font-weight: 600; padding: 3px 8px; border-radius: 6px; background: #e9ecf0; color: #4e5968">예시 데이터</span></div>
+        <p style="margin: 0; font-size: 14px; line-height: 20px; color: #4e5968">{{who}}</p>
+      </div>
+
+    <section aria-labelledby="cal" style="background: #ffffff; border-radius: 20px;  padding: 22px; display: flex; flex-direction: column; gap: 16px">
+      <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 14px 24px">
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <div style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px">
+            <h2 id="cal" style="margin: 0; font-size: 19px; line-height: 26px; font-weight: 700">학원 일정</h2>
+            <span style="font-size: 15px; line-height: 22px; color: var(--ink3); font-variant-numeric: tabular-nums">{{rangeLabel}}</span>
+          </div>
+          <p style="margin: 0; font-size: 13px; line-height: 20px; color: var(--ink2); white-space: pre-line">{{calDesc}}</p>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
+          <sc-if value="{{isOwner}}" hint-placeholder-val="{{true}}">
+            <button type="button" style="display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 14px; border: 0; border-radius: 10px; background: var(--soft); color: var(--ink); font-size: 13px; font-weight: 700; cursor: pointer"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 2v10M2 7h10"></path></svg>일정 등록</button>
+          </sc-if>
+          <div role="group" aria-label="달력 보기" style="display: flex; padding: 3px; border-radius: 10px; background: var(--soft)">
+            <sc-for list="{{views}}" as="v" hint-placeholder-count="2">
+              <button type="button" aria-pressed="{{v.sel}}" onClick="{{v.pick}}" style="{{v.style}}">{{v.label}}</button>
+            </sc-for>
+          </div>
+          <button type="button" aria-label="{{prevLabel}}" style="width: 40px; height: 40px; border: 0; border-radius: 10px; background: var(--soft); cursor: pointer; display: inline-flex; align-items: center; justify-content: center"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="var(--ink)" stroke-width="1.8"><path d="M10 3L5 8l5 5"></path></svg></button>
+          <button type="button" style="height: 40px; padding: 0 14px; border: 0; border-radius: 10px; background: var(--soft); color: var(--ink); font-size: 13px; font-weight: 700; cursor: pointer">{{nowLabel}}</button>
+          <button type="button" aria-label="{{nextLabel}}" style="width: 40px; height: 40px; border: 0; border-radius: 10px; background: var(--soft); cursor: pointer; display: inline-flex; align-items: center; justify-content: center"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="var(--ink)" stroke-width="1.8"><path d="M6 3l5 5-5 5"></path></svg></button>
+        </div>
+      </div>
+
+      <sc-if value="{{isWeek}}" hint-placeholder-val="{{true}}">
+        <div style="overflow-x: auto; margin: 0 -4px; padding: 2px 4px 4px">
+          <div style="min-width: 980px; display: flex; flex-direction: column; gap: 14px">
+            <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 10px; align-items: stretch">
+              <sc-for list="{{wcards}}" as="d" hint-placeholder-count="7">
+                <div style="{{d.style}}">
+                  <div style="display: flex; align-items: baseline; gap: 6px; padding: 0 2px 4px">
+                    <span style="font-size: 26px; line-height: 32px; font-weight: 700; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; color: {{d.numFg}}">{{d.n}}</span>
+                    <span style="font-size: 14px; line-height: 20px; color: {{d.dowFg}}">{{d.dow}}</span>
+                    <sc-if value="{{d.today}}" hint-placeholder-val="{{false}}"><span style="align-self: center; font-size: 11px; line-height: 14px; font-weight: 700; padding: 3px 8px; border-radius: 999px; background: var(--ink); color: #ffffff">오늘</span></sc-if>
+                  </div>
+                  <sc-for list="{{d.items}}" as="e" hint-placeholder-count="3">
+                    <button type="button" onClick="{{e.pick}}" aria-pressed="{{e.on}}" style="{{e.style}}"><span style="font-weight: 700; color: {{e.labFg}}">{{e.label}}</span> <span style="font-variant-numeric: tabular-nums">{{e.time}}</span> {{e.title}}</button>
+                  </sc-for>
+                  <sc-if value="{{d.more}}" hint-placeholder-val="{{false}}">
+                    <button type="button" style="align-self: flex-start; min-height: 28px; padding: 0 6px; border: 0; background: transparent; color: var(--ink3); font-size: 12px; font-weight: 600; cursor: pointer">{{d.more}}</button>
+                  </sc-if>
+                  <sc-if value="{{d.empty}}" hint-placeholder-val="{{false}}">
+                    <span style="font-size: 12px; line-height: 18px; color: var(--ink4); padding: 2px 4px">일정 없음</span>
+                  </sc-if>
+                </div>
+              </sc-for>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); grid-auto-rows: 34px; gap: 8px 10px">
+              <sc-for list="{{bars}}" as="b" hint-placeholder-count="2">
+                <div style="{{b.style}}"><span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{b.title}}</span><span style="flex: none; font-variant-numeric: tabular-nums">{{b.n}}</span></div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+
+        <sc-if value="{{sel}}" hint-placeholder-val="{{true}}">
+          <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; padding: 16px 18px; border-radius: 14px; background: var(--bg)">
+            <span style="{{sel.chip}}">{{sel.label}}</span>
+            <div style="flex: 1 1 320px; display: flex; flex-direction: column; min-width: 0">
+              <span style="font-size: 18px; line-height: 26px; font-weight: 700">{{sel.title}}</span>
+              <span style="font-size: 13px; line-height: 20px; color: var(--ink2)">{{sel.when}} · {{sel.meta}}</span>
+            </div>
+            <div style="display: flex; gap: 6px">
+              <button type="button" style="height: 36px; padding: 0 12px; border: 0; border-radius: 8px; background: var(--soft); color: var(--ink); font-size: 13px; font-weight: 600; cursor: pointer">{{sel.action}}</button>
+              <sc-if value="{{isOwner}}" hint-placeholder-val="{{true}}"><button type="button" style="height: 36px; padding: 0 12px; border: 0; border-radius: 8px; background: var(--soft); color: var(--ink); font-size: 13px; font-weight: 600; cursor: pointer">수정</button></sc-if>
+            </div>
+          </div>
+        </sc-if>
+      </sc-if>
+
+      <sc-if value="{{isMonth}}" hint-placeholder-val="{{false}}">
+        <div style="overflow-x: auto">
+          <div style="min-width: 760px; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px">
+            <sc-for list="{{mhead}}" as="h" hint-placeholder-count="7"><span style="font-size: 12px; line-height: 16px; font-weight: 600; color: var(--ink3); padding: 0 8px">{{h}}</span></sc-for>
+            <sc-for list="{{mdays}}" as="d" hint-placeholder-count="35">
+              <div style="{{d.style}}">
+                <span style="{{d.numStyle}}">{{d.n}}</span>
+                <sc-for list="{{d.evs}}" as="e" hint-placeholder-count="2">
+                  <span style="{{e.style}}">{{e.title}}</span>
+                </sc-for>
+                <sc-if value="{{d.more}}" hint-placeholder-val="{{false}}"><span style="font-size: 11px; line-height: 14px; color: var(--ink3); padding-left: 4px">{{d.more}}</span></sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+      <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; padding-top: 4px; font-size: 13px; line-height: 18px; color: var(--ink2)">
+        <sc-for list="{{legend}}" as="l" hint-placeholder-count="8">
+          <span style="display: inline-flex; align-items: center; gap: 8px"><span style="{{l.chip}}">{{l.label}}</span>{{l.name}}</span>
+        </sc-for>
+        <span style="display: inline-flex; align-items: center; gap: 8px"><span style="width: 26px; height: 16px; border-radius: 4px; background: repeating-linear-gradient(135deg, var(--warn-t) 0 4px, #ffffff 4px 8px); box-shadow: inset 0 0 0 1px var(--ma-2)"></span>학교 시험 기간</span>
+      </div>
+    </section>
+  </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1150}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { role: 'owner', tab: 'action', view: 'week', ev: null }; }
+  renderVals() {
+    const side = (() => {
+      const collapsed = !!(this.state && this.state.side);
+      const own = this.state.role === 'owner';
+      const D = {
+        home: 'M3.5 9.2 10 4l6.5 5.2V16a1 1 0 0 1-1 1H12v-4.5H8V17H4.5a1 1 0 0 1-1-1z',
+        cal: 'M5 4.5h10a2 2 0 0 1 2 2V15a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6.5a2 2 0 0 1 2-2zM3 8.5h14M7 3v3M13 3v3',
+        att: 'M3 10a7 7 0 1 0 14 0a7 7 0 1 0-14 0M7 10.2l2 2 4-4.4',
+        stu: 'M5 7a3 3 0 1 0 6 0a3 3 0 1 0-6 0M2.5 16.5c.7-2.6 2.8-4 5.5-4s4.8 1.4 5.5 4M13.5 4.6a2.6 2.6 0 0 1 0 5M15 12.8c1.3.6 2.1 1.9 2.5 3.7',
+        cls: 'M4 4.5A1.5 1.5 0 0 1 5.5 3H16v12H5.5A1.5 1.5 0 0 0 4 16.5zM4 16.5A1.5 1.5 0 0 0 5.5 18H16v-3M7.5 7h5',
+        grd: 'M4 16.5V10M10 16.5V4.5M16 16.5V8M2.5 16.5h15',
+        talk: 'M4 4.5h12a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H9l-4 3v-3H4a1 1 0 0 1-1-1v-8a1 1 0 0 1 1-1zM7 9h6',
+        bill: 'M4 5h12a1.5 1.5 0 0 1 1.5 1.5v7A1.5 1.5 0 0 1 16 15H4a1.5 1.5 0 0 1-1.5-1.5v-7A1.5 1.5 0 0 1 4 5zM2.5 8.5h15M6 12h3',
+        staff: 'M6 3h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zM8 8a2 2 0 1 0 4 0a2 2 0 1 0-4 0M7 14c.6-1.4 1.7-2 3-2s2.4.6 3 2',
+        set: 'M3.5 6h13M3.5 14h13M6 6a1.8 1.8 0 1 0 3.6 0a1.8 1.8 0 1 0-3.6 0M10.4 14a1.8 1.8 0 1 0 3.6 0a1.8 1.8 0 1 0-3.6 0',
+        pen: 'M4 16l1-3.5L13.5 4a1.4 1.4 0 0 1 2 0l.5.5a1.4 1.4 0 0 1 0 2L7.5 15zM11.5 6l2.5 2.5',
+        lock: 'M5.5 9h9a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-9a1 1 0 0 1-1-1v-6a1 1 0 0 1 1-1zM7 9V6.5a3 3 0 0 1 6 0V9'
+      };
+      const it = (key, name, icon, href, badge, warn) => {
+        const on = key === 'cal';
+        return { name, d: D[icon], href, current: on ? 'page' : 'false', badge: (!collapsed && badge) ? badge : '',
+          badgeStyle: 'flex: none; font-size: 12px; line-height: 16px; font-weight: 600; padding: 1px 8px; border-radius: 999px; font-variant-numeric: tabular-nums; ' + (warn ? 'background: #fbf3e2; color: #8a5a00;' : 'background: #f2f4f6; color: #4e5968;'),
+          style: 'display: flex; align-items: center; gap: 12px; min-height: 42px; border-radius: 10px; text-decoration: none; font-size: 15px; line-height: 20px; ' + (collapsed ? 'justify-content: center; padding: 0;' : 'padding: 0 12px;') + (on ? ' background: #eef2f9; color: #2c4682; font-weight: 600;' : ' color: #4e5968;') };
+      };
+      const G = (title, items, lock) => ({ title, items, lock: !!lock, showTitle: !collapsed, divider: collapsed && title !== '오늘' });
+      const groups = own ? [
+        G('오늘', [it('home', '홈', 'home', 'Light.dc.html'), it('cal', '일정', 'cal', 'Schedule.dc.html'), it('att', '출결·보강', 'att', 'Attendance.dc.html', '2', true)]),
+        G('학생·수업', [it('students', '학생', 'stu', 'Students.dc.html', '128'), it('cls', '수업', 'cls', 'Classes.dc.html', '18'), it('grd', '성적 입력', 'grd', 'Grades.dc.html'), it('talk', '상담', 'talk', 'Counsel.dc.html', '2', true)]),
+        G('원장 전용', [it('billing', '수납', 'bill', 'Billing.dc.html', '3', true), it('staff', '강사', 'staff', 'Staff.dc.html'), it('perm', '권한', 'lock', 'Permissions.dc.html'), it('set', '설정', 'set', '#')], true)
+      ] : [
+        G('오늘', [it('home', '홈', 'home', 'Light.dc.html'), it('cal', '내 시간표', 'cal', 'Schedule.dc.html'), it('att', '출석부', 'att', 'Attendance.dc.html', '2', true)]),
+        G('내 반', [it('students', '내 반 학생', 'stu', 'Students.dc.html', '38'), it('cls', '내 수업', 'cls', 'Classes.dc.html', '4'), it('grd', '성적 입력', 'pen', 'Grades.dc.html', '11', true), it('talk', '상담 요청', 'talk', 'Counsel.dc.html')])
+      ];
+      return { groups, open: !collapsed, closed: collapsed, expanded: String(!collapsed),
+        user: own ? '[원장 이름]' : '박지은', role: own ? '원장 · 일산 본원' : '영어 강사 · 4개 반', initial: own ? '원' : '박',
+        toggle: () => this.setState({ side: !collapsed }),
+        toggleLabel: collapsed ? '메뉴 펼치기' : '메뉴 접기',
+        chev: collapsed ? 'M8 5l5 5-5 5' : 'M12 5l-5 5 5 5',
+        aside: 'flex: 1 1 ' + (collapsed ? '76px' : '244px') + '; max-width: ' + (collapsed ? '76px' : '244px') + '; box-sizing: border-box; padding: 22px ' + (collapsed ? '12px' : '14px') + ' 18px; background: #ffffff; display: flex; flex-direction: column; gap: 26px; box-shadow: 1px 0 0 #eceff2;',
+        head: 'display: flex; align-items: center; min-height: 44px; ' + (collapsed ? 'justify-content: center;' : 'padding: 0 10px;'),
+        userRow: 'display: flex; align-items: center; gap: 10px; padding: 10px ' + (collapsed ? '0; justify-content: center;' : '8px;') + ' border-radius: 12px; background: #f7f8fa;',
+        toggleStyle: 'display: flex; align-items: center; gap: 8px; min-height: 40px; border: 0; border-radius: 10px; background: transparent; color: #6b7684; font-size: 13px; font-weight: 600; cursor: pointer; ' + (collapsed ? 'justify-content: center; padding: 0;' : 'padding: 0 12px;') };
+    })();
+    const owner = this.state.role === 'owner';
+
+    const PAL = {
+      e: { v: { pri: '#222a36', 'pri-t': '#f2f4f6', en: '#3a5ba0', 'en-t': '#eef2f9', 'en-2': '#5a77b6', 'en-d': '#2c4682', ma: '#7a6a58', 'ma-2': '#b07a1a', warn: '#8a5a00', 'warn-t': '#fbf3e2', ev: '#4e5968', 'ev-t': '#f2f4f6', 'ev-d': '#333d4b', bg: '#f4f5f7', line: '#e5e8eb', line2: '#f0f2f4', line3: '#d1d6db', soft: '#f2f4f6', ink: '#191f28', ink2: '#4e5968', ink3: '#6b7684', ink4: '#8b95a1', alert: '#b42318', today: '#f5f8fd' } }
+    };
+    const cur = PAL.e;
+    const palVars = Object.keys(cur.v).map((k) => '--' + k + ': ' + cur.v[k] + ';').join(' ');
+    const seg = (on) => 'min-height: 36px; padding: 0 14px; border: 0; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; ' + (on ? 'background: #ffffff; color: var(--ink); box-shadow: 0 1px 2px rgba(27,29,30,0.12);' : 'background: transparent; color: var(--ink3);');
+    const roles = [['owner', '원장으로 보기'], ['teacher', '강사로 보기']].map(([id, label]) => ({ label, pressed: String(this.state.role === id), style: seg(this.state.role === id), pick: () => this.setState({ role: id, tab: 'action' }) }));
+    const mods = owner
+      ? [['홈', 'var(--ink)'], ['일정', 'var(--pri)'], ['출결·보강', 'var(--pri)'], ['학생', 'var(--en)'], ['수업', 'var(--en)'], ['성적·리포트', 'var(--en)'], ['상담', 'var(--ma-2)']]
+      : [['홈', 'var(--ink)'], ['일정', 'var(--pri)'], ['출석부', 'var(--pri)'], ['내 반 학생', 'var(--en)'], ['성적 입력', 'var(--en)'], ['상담 요청', 'var(--ma-2)']];
+    const nav = mods.map(([name, dot], i) => ({ name, dot, href: name === '학생' ? 'Students.dc.html' : '#', style: 'display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 12px; font-size: 14px; text-decoration: none; ' + (i === 0 ? 'color: var(--ink); font-weight: 700; box-shadow: inset 0 -3px 0 var(--pri);' : 'color: var(--ink2);') }));
+    const kpi = (bg, labelFg, bar, label, badge, value, unit, pct, sub) => ({ label, badge, value, unit, pct, sub, mark: '',
+      labelFg: bg === 'var(--warn-t)' ? 'var(--warn)' : 'var(--ink3)',
+      bar: bg === 'var(--warn-t)' ? 'var(--ma-2)' : 'var(--en)',
+      style: 'display: flex; flex-direction: column; gap: 8px; padding: 18px 20px; background: #ffffff; border-radius: 18px; ' });
+    const kpis = owner
+      ? [kpi('var(--en-t)', 'var(--pri)', 'var(--en-2)', '오늘 출석', '17:20 기준', '41', '/ 64명', '64%', '미등원 2명 · 연락 없음'),
+         kpi('var(--pri-t)', 'var(--pri)', 'var(--pri)', '이번 주 일정', '남은 7건', '12', '건', '42%', '오늘 단원평가 · 신규 상담'),
+         kpi('var(--warn-t)', 'var(--warn)', 'var(--ma-2)', '10월 평가 입력', '마감 10.31', '84', '%', '84%', '2개 반 미입력 · 리포트 대기'),
+         kpi('var(--soft)', 'var(--ink2)', 'var(--ink)', '재원생', '▲ 6', '128', '명', '91%', '정원 140명 · 신규 상담 9건')]
+      : [kpi('var(--pri-t)', 'var(--pri)', 'var(--pri)', '오늘 내 수업', '2번째 진행 중', '4', '개', '50%', '다음 19:00 고1 영어 내신'),
+         kpi('var(--en-t)', 'var(--pri)', 'var(--en-2)', '지금 수업 출석', '중2 영어 심화', '12', '/ 14명', '86%', '미등원 2명 · 데스크 연락 중'),
+         kpi('var(--warn-t)', 'var(--warn)', 'var(--ma-2)', '점수 입력 남음', '마감 10.31', '11', '명', '72%', '고1 영어 내신 10월 월말평가'),
+         kpi('var(--soft)', 'var(--ink2)', 'var(--ink)', '내 반 학생', '4개 반', '38', '명', '100%', '과제 미제출 3명')];
+    const tabs = [['action', '조치 필요'], ['info', '참고']].map(([id, label]) => ({ label, sel: String(this.state.tab === id), style: seg(this.state.tab === id), pick: () => this.setState({ tab: id }) }));
+    const A = (sev, kind, kindFg, title, sub, action) => ({ sev, kind, kindFg, title, sub, action });
+    const hot = 'var(--alert)', mid = 'var(--ma-2)', calm = 'var(--en)';
+    const all = owner ? {
+      action: [A(hot, '미등원 · 긴급', 'var(--alert)', '중2 영어 심화 2명 연락 없음', '오준서, 윤하람 · 50분 지남', '전화'),
+               A(mid, '성적', 'var(--warn)', '점수 미입력 2개 반', '중3 수학 A, 고1 영어 내신', '요청'),
+               A(mid, '보강', 'var(--warn)', '오준서 보강 일정 미정', '2회 결석 · 학부모 문의', '일정 잡기'),
+               A(mid, '상담', 'var(--warn)', '가입 문의 2건 미응대', '3일 지남', '연락')],
+      info: [A(calm, '정원', 'var(--pri)', '고2 수학 정원 마감', '대기 3명 · 반 증설 검토', null),
+             A(calm, '행사', 'var(--pri)', '11.2 학부모 설명회 신청 18명', '좌석 30석', null),
+             A(calm, '생일', 'var(--pri)', '11월 1일 생일 2명', '한예린, 남궁율', null)] } : {
+      action: [A(hot, '출결 · 긴급', 'var(--alert)', '내 수업 미등원 2명', '오준서, 윤하람 · 데스크 연락 중', '출석부'),
+               A(mid, '과제', 'var(--warn)', '과제 미제출 3명', '고1 영어 내신 · 19:00 전 확인', '명단'),
+               A(mid, '성적', 'var(--warn)', '점수 입력 11명 남음', '마감 10월 31일', '입력')],
+      info: [A(calm, '전달', 'var(--pri)', '원장님 메모', '오준서 보강 가능 시간 남기기', null),
+             A(calm, '보강', 'var(--pri)', '내일 16:00 보강 1건', '이건우 · 1강의실', null)] };
+    const alerts = all[this.state.tab];
+    const hours = ['14','15','16','17','18','19','20','21'].map((h, i) => ({ label: h + ':00', col: 2 + i * 2 }));
+    const rooms = [{ name: '1강의실', row: 2 }, { name: '2강의실', row: 3 }, { name: '3강의실', row: 4 }];
+    const fill = { en: 'var(--en)', ma: 'var(--ma)' };
+    const blk = (row, col, span, s, st, title, meta, mine) => {
+      let look;
+      if (!owner && !mine) look = 'background: var(--bg); color: var(--ink4);';
+      else if (st === 'now') look = 'background: ' + fill[s] + '; color: #ffffff;';
+      else if (st === 'done') look = 'background: var(--line2); color: var(--ink3);';
+      else look = 'background: #ffffff; color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--ink4);';
+      return { title, meta, style: 'grid-row: ' + row + '; grid-column: ' + col + ' / span ' + span + '; margin: 0 2px; border-radius: 10px; padding: 8px 12px; display: flex; flex-direction: column; justify-content: center; min-width: 0; box-sizing: border-box; ' + look };
+    };
+    const blocks = [
+      blk(2, 3, 3, 'en', 'done', '초6 영어 기초', '박지은 · 9/10', true), blk(2, 7, 4, 'en', 'now', '중2 영어 심화', '박지은 · 12/14', true), blk(2, 12, 4, 'en', 'next', '고1 영어 내신', '박지은 · 11명', true),
+      blk(3, 4, 3, 'ma', 'done', '중1 수학 A', '이도현 · 8/8'), blk(3, 8, 4, 'ma', 'now', '중3 수학 A', '이도현 · 10/10'), blk(3, 13, 4, 'ma', 'next', '고2 수학', '최윤서 · 9명'),
+      blk(4, 6, 3, 'ma', 'done', '초5 수학', '최윤서 · 7/7'), blk(4, 10, 4, 'en', 'next', '중1 영어', '김나래 · 12명'), blk(4, 15, 3, 'en', 'next', '고3 영어', '박지은 · 6명', true)
+    ];
+    const Q = (bg, fg, kind, title, sub) => ({ bg, fg, kind, title, sub });
+    const queue = owner
+      ? [Q('var(--pri-t)', 'var(--pri)', '보강 · 결석에서 연결', '이건우 → 10.30 16:00', '1강의실 · 박지은 확인 완료'),
+         Q('var(--warn-t)', 'var(--warn)', '보강 · 일정 미정', '오준서 2회 결석', '학부모 문의 · 시간 제안 필요'),
+         Q('var(--soft)', 'var(--ink2)', '하원 알림', '18:30 14건 자동 발송', '중2 영어 심화 종료 시')]
+      : [Q('var(--pri-t)', 'var(--pri)', '보강', '이건우 · 내일 16:00', '1강의실 · 30분'),
+         Q('var(--soft)', 'var(--ink2)', '수업 노트', '중2 영어 심화 미작성', '저장하면 리포트에 함께 실립니다')];
+
+    /* ---- 학원 일정 ---- */
+    const TY = {
+      cls:    { label: '수업', name: '수업',      bg: 'var(--soft)',   bd: 'transparent',      lab: 'var(--ink2)' },
+      make:   { label: '보강', name: '보강',      bg: '#ffffff',       bd: 'var(--ink4)',      lab: 'var(--ink)', dashed: true },
+      exam:   { label: '시험', name: '학원 시험', bg: 'var(--warn-t)', bd: 'transparent',      lab: 'var(--warn)' },
+      event:  { label: '행사', name: '학원 행사', bg: '#ffffff',       bd: 'var(--line3)',     lab: 'var(--ma)' },
+      talk:   { label: '상담', name: '상담',      bg: 'var(--en-t)',   bd: 'transparent',      lab: 'var(--en)' },
+      meet:   { label: '회의', name: '강사 회의', bg: '#ffffff',       bd: 'var(--line3)',     lab: 'var(--ink3)' },
+      off:    { label: '휴원', name: '휴원·휴강', bg: '#ffffff',       bd: 'var(--line)',      lab: 'var(--alert)' }
+    };
+    const chipCss = (t) => 'background: ' + t.bg + '; box-shadow: ' + (t.dashed ? 'none' : 'inset 0 0 0 1px ' + t.bd) + '; ' + (t.dashed ? 'border: 1px dashed ' + t.bd + ';' : 'border: 0;');
+    const legend = ['cls', 'make', 'exam', 'event', 'talk', 'meet', 'off'].map((k) => ({ label: TY[k].label, name: TY[k].name,
+      chip: 'display: inline-flex; align-items: center; height: 22px; padding: 0 7px; border-radius: 5px; box-sizing: border-box; font-size: 12px; font-weight: 700; color: ' + TY[k].lab + '; ' + chipCss(TY[k]) }));
+    const views = [['week', '주'], ['month', '월']].map(([id, label]) => ({ label, sel: String(this.state.view === id), pick: () => this.setState({ view: id }),
+      style: 'min-height: 34px; min-width: 44px; padding: 0 12px; border: 0; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; ' + (this.state.view === id ? 'background: #ffffff; color: var(--ink); box-shadow: 0 1px 2px rgba(27,29,30,0.14);' : 'background: transparent; color: var(--ink3);') }));
+    const isWeek = this.state.view === 'week';
+    const ME = '박지은';
+    const C = (time, title, teacher, room) => ({ type: 'cls', time, title, teacher, meta: teacher + ' · ' + room });
+    const E = (type, time, title, meta, forT) => ({ type, time, title, meta, forT });
+    const mwf = [C('14:30', '초6 영어 기초', '박지은', '1강의실'), C('16:30', '중2 영어 심화', '박지은', '1강의실'), C('19:00', '중2 수학 B', '이도현', '2강의실')];
+    const tt = [C('15:00', '중1 수학 A', '이도현', '2강의실'), C('17:00', '중3 수학 A', '이도현', '2강의실'), C('18:00', '중1 영어', '김나래', '3강의실'), C('19:00', '고1 영어 내신', '박지은', '1강의실'), C('19:30', '고2 수학', '최윤서', '2강의실')];
+    const WEEK = [
+      { n: 26, dow: '월', cls: [C('14:30', '초6 영어 기초', '박지은', '1강의실'), C('16:00', '초5 수학', '최윤서', '3강의실'), C('16:30', '중2 영어 심화', '박지은', '1강의실'), C('19:00', '중2 수학 B', '이도현', '2강의실')],
+        ev: [E('meet', '13:00', '주간 강사 회의', '전체 강사 · 2층 회의실', true)] },
+      { n: 27, dow: '화', cls: tt, ev: [E('talk', '19:00', '정도윤 학부모 상담', '원장 · 수학 반 이동 문의', false)] },
+      { n: 28, dow: '수', cls: mwf, ev: [E('exam', '15:00', '고3 모의고사 대비 테스트', '3강의실 · 박지은 · 6명', true), E('make', '20:00', '중2 영어 · 윤하람', '1강의실 · 박지은 · 10.26 결석분', true)] },
+      { n: 29, dow: '목', today: true, cls: [C('14:30', '초6 영어 기초', '박지은', '1강의실'), C('15:00', '중1 수학 A', '이도현', '2강의실'), C('16:00', '초5 수학', '최윤서', '3강의실'), C('16:30', '중2 영어 심화', '박지은', '1강의실'), C('17:00', '중3 수학 A', '이도현', '2강의실'), C('18:00', '중1 영어', '김나래', '3강의실'), C('19:00', '고1 영어 내신', '박지은', '1강의실'), C('19:30', '고2 수학', '최윤서', '2강의실'), C('20:30', '고3 영어', '박지은', '3강의실')],
+        ev: [E('exam', '17:00', '중3 수학 단원평가 (일차함수)', '2강의실 · 이도현 · 10명', false), E('talk', '18:30', '신규 상담 · 최하준', '원장 · 레벨 테스트 수학 68', false)] },
+      { n: 30, dow: '금', cls: mwf, ev: [E('make', '16:00', '중2 영어 · 이건우', '1강의실 · 박지은 · 30분', true), E('talk', '19:30', '학습 상담 · 김서윤', '박지은 · 서술형 클리닉', true)] },
+      { n: 31, dow: '토', cls: [C('10:00', '중1 영어 문법 특강', '김나래', '3강의실'), C('20:30', '고3 영어', '박지은', '3강의실')],
+        ev: [E('exam', '종일', '10월 평가 입력 마감', '마감 후 11.3 리포트 발송', true), E('event', '10:00', '중등 학부모 설명회', '1층 강의실 · 신청 18명', true), E('exam', '13:00', '신규생 레벨 테스트', '3강의실 · 4명', false)] },
+      { n: 1, dow: '일', label: '11.1', cls: [], ev: [E('make', '10:00', '중2 수학 B · 오준서', '2강의실 · 이도현 · 결석 2회분', false), E('off', '종일', '정기 휴원', '보강만 진행', true)] }
+    ];
+    const toKey = (t) => t === '종일' ? -1 : Number(t.replace(':', '.'));
+    const CLS_MAX = 6;
+    const visibleAll = [];
+    const wcards = WEEK.map((d, di) => {
+      const cls = owner ? d.cls : d.cls.filter((c) => c.teacher === ME);
+      const evs = owner ? d.ev : d.ev.filter((e) => e.forT);
+      const shownCls = cls.slice(0, CLS_MAX);
+      const hidden = cls.length - shownCls.length;
+      const list = evs.concat(shownCls).sort((x, y) => toKey(x.time) - toKey(y.time));
+      const items = list.map((e, ei) => {
+        const id = di + ':' + e.type + ':' + e.time + ':' + e.title;
+        const t = TY[e.type];
+        const on = this.state.ev === id;
+        visibleAll.push({ id, e, d });
+        return { label: t.label, labFg: t.lab, time: e.time, title: e.title, on: String(on), pick: () => this.setState({ ev: id }),
+          style: 'display: block; width: 100%; text-align: left; padding: 6px 8px; border-radius: 7px; box-sizing: border-box; font-family: inherit; font-size: 13px; line-height: 18px; color: var(--ink); cursor: pointer; word-break: keep-all; ' + chipCss(t) + (on ? ' outline: 2px solid var(--ink); outline-offset: 1px;' : '') };
+      });
+      const sun = d.dow === '일', sat = d.dow === '토';
+      return { n: String(d.n), dow: d.dow, today: !!d.today, items, empty: items.length === 0,
+        more: hidden > 0 ? '+ 수업 ' + hidden + '개 더 보기' : '',
+        numFg: sun ? 'var(--alert)' : 'var(--ink)', dowFg: sun ? 'var(--alert)' : (sat ? 'var(--en)' : 'var(--ink3)'),
+        style: 'display: flex; flex-direction: column; gap: 6px; min-width: 0; min-height: 200px; padding: 12px; box-sizing: border-box; border-radius: 16px; ' +
+          (d.today ? 'background: var(--en-t);' : 'background: var(--bg);') };
+    });
+    const bar = (from, to, row, title, n) => ({ title, n,
+      style: 'grid-column: ' + from + ' / ' + (to + 1) + '; grid-row: ' + row + '; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 0 12px; border-radius: 8px; font-size: 13px; line-height: 18px; font-weight: 700; color: var(--warn); background: repeating-linear-gradient(135deg, var(--warn-t) 0 6px, #ffffff 6px 12px); box-shadow: inset 0 0 0 1px var(--ma-2);' });
+    const bars = [bar(2, 4, 1, '백석중 2학기 기말고사', '우리 학원 24명'), bar(4, 5, 2, '정발중 2학기 기말고사', '우리 학원 18명')];
+    const selRow = visibleAll.find((v) => v.id === this.state.ev) || visibleAll.find((v) => v.d.today && v.e.type !== 'cls') || visibleAll[0];
+    let sel = null;
+    if (selRow) {
+      const t = TY[selRow.e.type];
+      sel = { label: t.name, title: selRow.e.title, meta: selRow.e.meta,
+        when: (selRow.d.label || ('10월 ' + selRow.d.n + '일')) + ' (' + selRow.d.dow + ') ' + selRow.e.time,
+        action: selRow.e.type === 'cls' ? '출석부 열기' : selRow.e.type === 'talk' ? '상담 카드 열기' : selRow.e.type === 'exam' ? '대상 학생 보기' : '자세히',
+        chip: 'display: inline-flex; align-items: center; height: 28px; padding: 0 10px; border-radius: 6px; box-sizing: border-box; font-size: 13px; font-weight: 700; color: ' + t.lab + '; ' + chipCss(t) };
+    }
+    const mhead = ['월', '화', '수', '목', '금', '토', '일'];
+    const MEV = {
+      1: [['exam', '10월 월말평가 시작']], 3: [['off', '개천절 휴원']], 6: [['meet', '강사 회의']], 9: [['off', '한글날 휴원']],
+      13: [['meet', '강사 회의']], 14: [['talk', '학부모 상담 주간']], 15: [['talk', '학부모 상담 주간']], 16: [['talk', '학부모 상담 주간'], ['event', '초등 설명회']],
+      20: [['meet', '강사 회의'], ['make', '보강 3건']], 22: [['exam', '고3 모의고사']], 24: [['event', '체험 수업 데이']],
+      26: [['meet', '강사 회의']], 27: [['talk', '정도윤 상담']], 28: [['exam', '고3 대비 테스트'], ['make', '윤하람']],
+      29: [['exam', '중3 단원평가'], ['talk', '신규 상담']], 30: [['make', '이건우'], ['talk', '학습 상담']], 31: [['exam', '평가 입력 마감'], ['event', '학부모 설명회'], ['exam', '레벨 테스트']]
+    };
+    const mdays = [];
+    for (let i = 0; i < 35; i++) {
+      const n = i - 2;
+      const inM = n >= 1 && n <= 31;
+      const today = n === 29;
+      const list = inM ? (MEV[n] || []) : (i === 34 ? [['off', '정기 휴원']] : []);
+      const school = inM && n >= 27 && n <= 30;
+      const evs = list.slice(0, 2).map(([k, title]) => ({ title: TY[k].label + ' ' + title,
+        style: 'display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 12px; line-height: 16px; padding: 3px 6px; border-radius: 5px; color: var(--ink); box-sizing: border-box; ' + chipCss(TY[k]) }));
+      const label = inM ? String(n) : (i < 2 ? String(29 + i) : '1');
+      mdays.push({ n: label, evs, more: list.length > 2 ? '+' + (list.length - 2) + '건' : '',
+        numStyle: 'font-size: 13px; line-height: 20px; font-weight: 700; font-variant-numeric: tabular-nums; align-self: flex-start; ' + (today ? 'background: var(--ink); color: #ffffff; border-radius: 999px; padding: 0 7px;' : (inM ? (i % 7 === 6 ? 'color: var(--alert);' : '') : 'color: var(--ink4);')),
+        style: 'display: flex; flex-direction: column; gap: 3px; min-height: 108px; min-width: 0; padding: 8px; box-sizing: border-box; border-radius: 10px; ' +
+          (today ? 'background: var(--en-t);' : (inM ? 'background: var(--bg);' : 'background: transparent;')) +
+          (school && !today ? ' background-image: linear-gradient(to bottom, transparent calc(100% - 6px), var(--warn-t) calc(100% - 6px));' : '') });
+    }
+    return { side, palVars, roles, nav, kpis, tabs, alerts, hours, rooms, blocks, queue,
+      views, isWeek, isMonth: !isWeek, wcards, bars, sel, legend, mhead, mdays,
+      rangeLabel: isWeek ? '10월 26일 – 11월 1일' : '2026년 10월',
+      nowLabel: isWeek ? '이번 주' : '이번 달', prevLabel: isWeek ? '지난주' : '지난달', nextLabel: isWeek ? '다음 주' : '다음 달',
+      calDesc: owner ? '수업과 보강도 함께 보입니다. 일정을 누르면 아래에 자세히 보입니다.' : '다른 강사의 수업과 상담은 보이지 않습니다. 일정을 누르면 아래에 자세히 보입니다.',
+      who: owner ? '모든 직원이 함께 보는 학원 일정입니다.' : '박지은 강사의 수업과 학원 공통 일정입니다.',
+      ttTitle: owner ? '오늘 강의실 타임라인' : '오늘 시간표 · 내 수업 강조',
+      isOwner: owner, isTeacher: !owner };
+  }
+}
+</script>
+</body>
+</html>
